@@ -1,0 +1,3577 @@
+<!DOCTYPE html>
+<html lang="zh-Hant"><head><script data-bard-client-injected="true">(function(firebaseConfig, initialAuthToken, appId) {
+        window.__firebase_config = firebaseConfig;
+        window.__initial_auth_token = initialAuthToken;
+        window.__app_id = appId;
+            })("\n{\n  \"apiKey\": \"AIzaSyCqyCcs2R2e7AegGjvFAwG98wlamtbHvZY\",\n  \"authDomain\": \"bard-frontend.firebaseapp.com\",\n  \"projectId\": \"bard-frontend\",\n  \"storageBucket\": \"bard-frontend.firebasestorage.app\",\n  \"messagingSenderId\": \"175205271074\",\n  \"appId\": \"1:175205271074:web:2b7bd4d34d33bf38e6ec7b\"\n}\n","eyJhbGciOiJSUzI1NiIsImtpZCI6IjExNjRiNzdiNDMzZDdhMDAyMWI4NjE4YjhjYTU3ZTMyZGI5MWUxMTMiLCJ0eXAiOiJKV1QifQ.eyJzdWIiOiJmaXJlYmFzZS1hZG1pbnNkay1mYnN2Y0BiYXJkLWZyb250ZW5kLmlhbS5nc2VydmljZWFjY291bnQuY29tIiwiYXVkIjoiaHR0cHM6Ly9pZGVudGl0eXRvb2xraXQuZ29vZ2xlYXBpcy5jb20vZ29vZ2xlLmlkZW50aXR5LmlkZW50aXR5dG9vbGtpdC52MS5JZGVudGl0eVRvb2xraXQiLCJ1aWQiOiIxMzcwMjg0MTExMjUzMjM3Mzg5MiIsImlzcyI6ImZpcmViYXNlLWFkbWluc2RrLWZic3ZjQGJhcmQtZnJvbnRlbmQuaWFtLmdzZXJ2aWNlYWNjb3VudC5jb20iLCJjbGFpbXMiOnsiYXBwSWQiOiJjXzQzZDllYzg1ZDY1OWZlZWZfaW5kZXguaHRtbC0zMCJ9LCJleHAiOjE3OTUwNzYwMTksImlhdCI6MTc5NTA3MjQxOSwiYWxnIjoiUlMyNTYifQ.mwgkQYukF1Xg-dtXIzm8M7BFuiviT4i_c_l7Gj5wEGRiCogxUSFrOM1zFR4OpgSp16eBBaaOC6vbIUOdI9VYLCgsfxMsfmb1Yn1suhnkRxYSt4ogHZF5u77iOQhU478DTWH4KZuheqogseIR5AXZCJAW4SyZGklRkHVHtWK1ddZ-ISwz2-IWa4nM0TPJOABSh4UJKoOfJyTW7wW2_gOTW_Iri1R_540o7GPZlgeh2n4rgSer2sdcpV1EUoQZOjsXQ8xUk3UKCaitZWz7V_aCEJU7y6nZp6ZnO0Pnl7G6cvYsWseK5fKkpXhaerhVl7BOAJvbS2HRhAhQnS0YFAlHvw","c_43d9ec85d659feef_index.html-30")</script><script data-bard-client-injected="true">
+  document.addEventListener('input', (event) => {
+    if (event.target && (event.target.isContentEditable || event.target.hasAttribute('contenteditable'))) {
+      const clonedDoc = document.cloneNode(true);
+      const injectedScripts = clonedDoc.querySelectorAll('[data-bard-client-injected="true"]');
+      injectedScripts.forEach(el => el.remove());
+      window.parent.postMessage({
+        type: 'inlineEdit',
+        html: '<!DOCTYPE html>\n' + clonedDoc.documentElement.outerHTML
+      }, '*');
+    }
+  });
+</script><script data-bard-client-injected="true">(function(){'use strict';window.addEventListener("message",a=>{a.data&&a.data.type==="SUPPLEMENTAL_DATA_UPDATE"&&window.dispatchEvent(new CustomEvent("supplementaldataupdate",{detail:a.data.data}))});}).call(this);
+</script><script data-bard-client-injected="true">(function() {
+  const SCROLL_KEYS = new Set([
+    'ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight',
+    ' ', 'Spacebar', 'PageUp', 'PageDown', 'Home', 'End',
+  ]);
+  const HORIZONTAL_KEYS = new Set(['ArrowLeft', 'ArrowRight']);
+
+  function isTextEntryTarget(target) {
+    if (!target) return false;
+    const tagName = target.tagName;
+    return tagName === 'INPUT' || tagName === 'TEXTAREA' ||
+        tagName === 'SELECT' || target.isContentEditable === true;
+  }
+
+  // An element absorbs the key only if it both overflows on the axis being
+  // scrolled and is configured to scroll on that axis. The cheap dimension
+  // test runs first because getComputedStyle forces a style recalc, and this
+  // runs on every keypress. Each axis is read from its own longhand: the
+  // 'overflow' shorthand serializes as two values when the axes differ, which
+  // is the common 'overflow-x: hidden; overflow-y: auto' pane.
+  function canScroll(node, horizontal) {
+    const overflows = horizontal ? node.scrollWidth > node.clientWidth
+                                 : node.scrollHeight > node.clientHeight;
+    if (!overflows) return false;
+    const style = window.getComputedStyle(node);
+    const overflow = horizontal ? style.overflowX : style.overflowY;
+    return overflow === 'auto' || overflow === 'scroll';
+  }
+
+  // Walks up from the event target so nested scrollers keep their behavior.
+  // <body> is included because pages that pin the root height make it the
+  // scroll container.
+  function hasScrollableAncestor(target, horizontal) {
+    let node = target;
+    while (node && node !== document.documentElement) {
+      if (canScroll(node, horizontal)) return true;
+      node = node.parentElement;
+    }
+    return false;
+  }
+
+  function rootCanScroll(horizontal) {
+    const scroller = document.scrollingElement || document.documentElement;
+    if (!scroller) return false;
+    // Tolerate a pixel of rounding so subpixel layouts do not look scrollable.
+    return horizontal ? scroller.scrollWidth > window.innerWidth + 1
+                      : scroller.scrollHeight > window.innerHeight + 1;
+  }
+
+  window.addEventListener('keydown', function(event) {
+    if (!SCROLL_KEYS.has(event.key)) return;
+    if (event.defaultPrevented) return;
+    // Alt and Meta turn arrows into browser history navigation, and Ctrl is
+    // reserved for shortcuts, so none of them are scroll intent.
+    if (event.altKey || event.metaKey || event.ctrlKey) return;
+
+    const target = event.target;
+    if (isTextEntryTarget(target)) return;
+
+    // Anything that can still absorb the scroll gets to keep it.
+    const horizontal = HORIZONTAL_KEYS.has(event.key);
+    if (rootCanScroll(horizontal)) return;
+    if (hasScrollableAncestor(target, horizontal)) return;
+
+    event.preventDefault();
+  }, {capture: true, passive: false});
+})();</script><script data-bard-client-injected="true">(function() {
+  // Ensure this script is executed only once
+  if (window.firebaseAuthBridgeScriptLoaded) {
+    return;
+  }
+  window.firebaseAuthBridgeScriptLoaded = true;
+
+  let nextTokenPromiseId = 0;
+
+  // Stores { resolve, reject } for ongoing token requests
+  const pendingTokenPromises = {};
+
+  // Listen for messages from the Host Application
+  window.addEventListener('message', function(event) {
+
+    const messageData = event.data;
+
+  if (messageData && messageData.type === 'RESOLVE_NEW_FIREBASE_TOKEN') {
+      const { success, token, error, promiseId } = messageData ?? {};
+      if (pendingTokenPromises[promiseId]) {
+        if (success) {
+          pendingTokenPromises[promiseId].resolve(token);
+        } else {
+          pendingTokenPromises[promiseId].reject(new Error(error || 'Token refresh failed from host.'));
+        }
+        delete pendingTokenPromises[promiseId];
+      }
+    }
+  });
+
+  // Expose a function for the Generated App to request a new Firebase token
+  window.requestNewFirebaseToken = function() {
+    const currentPromiseId = nextTokenPromiseId++;
+    const promise = new Promise((resolve, reject) => {
+      pendingTokenPromises[currentPromiseId] = { resolve, reject };
+    });
+    if (window.parent && window.parent !== window) {
+      window.parent.postMessage({
+        type: 'REQUEST_NEW_FIREBASE_TOKEN',
+        promiseId: currentPromiseId
+      }, '*');
+    } else {
+      pendingTokenPromises[currentPromiseId].reject(new Error('No parent window to request token from.'));
+      delete pendingTokenPromises[currentPromiseId];
+    }
+    return promise;
+  };
+})();</script><script data-bard-client-injected="true">
+let realOriginalGetUserMedia = null;
+if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+  realOriginalGetUserMedia = navigator.mediaDevices.getUserMedia.bind(navigator.mediaDevices);
+}
+
+(function() {
+  if (navigator.mediaDevices && navigator.mediaDevices.__proto__) {
+    try {
+      Object.defineProperty(navigator.mediaDevices.__proto__, 'getUserMedia', {
+        get: function() {
+          return undefined; // Or throw an error
+        },
+        configurable: false
+      });
+    } catch (error) {
+      console.error("Error defining prototype getter:", error);
+    }
+  }
+})();
+
+(function() {
+  const pendingMediaResolvers = {};
+  let nextMediaPromiseId = 0;
+
+  function requestMediaPermissions(constraints) {
+    const mediaPromiseId = nextMediaPromiseId++;
+    const promise = new Promise((resolve, reject) => {
+      pendingMediaResolvers[mediaPromiseId] = (granted) => {
+        delete pendingMediaResolvers[mediaPromiseId];
+        resolve(granted);
+      };
+    });
+
+    window.parent.postMessage({
+      type: 'requestMediaPermission',
+      constraints: constraints,
+      promiseId: mediaPromiseId,
+    }, '*');
+
+    return promise;
+  }
+
+  let originalGetUserMedia = realOriginalGetUserMedia;
+
+  function interceptGetUserMedia() {
+    if (navigator.mediaDevices) {
+      Object.defineProperty(navigator.mediaDevices, 'getUserMedia', {
+        value: function(constraints) {
+          return requestMediaPermissions(constraints).then((granted) => {
+            if (granted) {
+              if (originalGetUserMedia) {
+                return originalGetUserMedia(constraints);
+              } else {
+                throw new Error("Original getUserMedia not available.");
+              }
+            } else {
+              throw new DOMException('Permission denied', 'NotAllowedError');
+            }
+          });
+        },
+        writable: false,
+        configurable: false
+      });
+    }
+  }
+
+  interceptGetUserMedia();
+
+  const observer = new MutationObserver(function(mutationsList, observer) {
+    for (const mutation of mutationsList) {
+      if (mutation.type === 'reconfigured' && mutation.name === 'getUserMedia' && mutation.object === navigator.mediaDevices) {
+        interceptGetUserMedia();
+      } else if (mutation.type === 'attributes' && mutation.attributeName === 'getUserMedia' && mutation.target === navigator.mediaDevices) {
+        interceptGetUserMedia();
+      } else if (mutation.type === 'childList' && mutation.addedNodes) {
+        mutation.addedNodes.forEach(node => {
+          if (node === navigator.mediaDevices) {
+            interceptGetUserMedia();
+          }
+        });
+      }
+    }
+  });
+
+  function interceptSpeechRecognition() {
+    if (!window.SpeechRecognition && !window.webkitSpeechRecognition) {
+      return;
+    }
+
+    const OriginalSpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+
+    const SpeechRecognitionWrapper = function(...args) {
+      const recognizer = new OriginalSpeechRecognition(...args);
+      const originalStart = recognizer.start.bind(recognizer);
+
+      recognizer.start = function() {
+        requestMediaPermissions({ audio: true }).then(granted => {
+          if (granted) {
+            originalStart();
+          } else {
+            const errorEvent = new SpeechRecognitionErrorEvent('error');
+            errorEvent.error = 'not-allowed'; // This is the standard error for permission denial.
+            recognizer.dispatchEvent(errorEvent);
+          }
+        });
+      };
+
+      return recognizer;
+    };
+
+    SpeechRecognitionWrapper.prototype = OriginalSpeechRecognition.prototype;
+    SpeechRecognitionWrapper.prototype.constructor = SpeechRecognitionWrapper;
+
+    if (window.SpeechRecognition) {
+      window.SpeechRecognition = SpeechRecognitionWrapper;
+    }
+    if (window.webkitSpeechRecognition) {
+      window.webkitSpeechRecognition = SpeechRecognitionWrapper;
+    }
+  }
+
+  interceptSpeechRecognition();
+
+  window.addEventListener('message', function(event) {
+    if (event.data) {
+      if (event.data.type === 'resolveMediaPermission') {
+        const { promiseId, granted } = event.data;
+        if (pendingMediaResolvers[promiseId]) {
+          pendingMediaResolvers[promiseId](granted);
+        }
+      }
+    }
+  });
+
+})();</script><script ws-interception-config="{&quot;parentOrigin&quot;:&quot;https://gemini.google.com&quot;,&quot;proxiedDomains&quot;:[]}" data-bard-client-injected="true">(function(){'use strict';var u=typeof Object.defineProperties=="function"?Object.defineProperty:function(b,d,e){if(b==Array.prototype||b==Object.prototype)return b;b[d]=e.value;return b};function v(b){b=["object"==typeof globalThis&&globalThis,b,"object"==typeof window&&window,"object"==typeof self&&self,"object"==typeof global&&global];for(var d=0;d<b.length;++d){var e=b[d];if(e&&e.Math==Math)return e}throw Error("Cannot find global object");}var w=v(this);
+function y(b,d){if(d)a:{var e=w;b=b.split(".");for(var h=0;h<b.length-1;h++){var k=b[h];if(!(k in e))break a;e=e[k]}b=b[b.length-1];h=e[b];d=d(h);d!=h&&d!=null&&u(e,b,{configurable:!0,writable:!0,value:d})}}function z(b){function d(h){return b.next(h)}function e(h){return b.throw(h)}return new Promise(function(h,k){function m(n){n.done?h(n.value):Promise.resolve(n.value).then(d,e).then(m,k)}m(b.next())})}y("globalThis",function(b){return b||w});/*
+
+ Copyright The Closure Library Authors.
+ SPDX-License-Identifier: Apache-2.0
+*/
+function A(b,d){function e(){}e.prototype=d.prototype;b.i=d.prototype;b.prototype=new e;b.prototype.constructor=b;b.h=function(h,k,m){for(var n=Array(arguments.length-2),p=2;p<arguments.length;p++)n[p-2]=arguments[p];return d.prototype[k].apply(h,n)}};function B(b,d,e="*"){function h(a){if(typeof a==="string")return F.encode(a).buffer;if(a instanceof ArrayBuffer)return a.slice(0);if(ArrayBuffer.isView(a))return a.buffer.slice(a.byteOffset,a.byteOffset+a.byteLength);throw Error("Invalid data type");}function k(a){a=h(a);var f={type:"send",data:new Uint8Array(a)},g;(g=r)==null||g.postMessage(f,[a])}function m(){if(!r)throw Error("Data port not captured yet.");r.onmessage=a=>{if(a.data.type==="message"){a=new MessageEvent("message",{data:G.decode(a.data.data)});
+let f;(f=c.onmessage)==null||f.call(c,a);c.dispatchEvent(a)}}}function n(){if(!t)throw Error("Control port not captured yet.");t.onmessage=a=>{switch(a.data.type){case "open":l=1;var f=new Event("open"),g;(g=c.onopen)==null||g.call(c,f);c.dispatchEvent(f);q.forEach(H=>{k(H)});q=[];break;case "close":g=a.data;l=3;g=new CloseEvent("close",{code:g.code,reason:g.reason,wasClean:g.wasClean});(f=c.onclose)==null||f.call(c,g);c.dispatchEvent(g);break;case "error":l=3;f=new Event("error");let x;(x=c.onerror)==
+null||x.call(c,f);c.dispatchEvent(f)}}}function p(a){return z(function*(){var f=new MessageChannel;t=f.port1;var g=new MessageChannel;r=g.port1;n();m();window.parent.postMessage({type:"websocket_open",portOrdering:["control","data"],url:b,protocols:a||[],connectionId:I},e,[f.port2,g.port2])}())}var c=Reflect.construct(EventTarget,[],new.target);c.CONNECTING=0;c.OPEN=1;c.CLOSING=2;c.CLOSED=3;c.url=b;c.binaryType="arraybuffer";c.protocol="";c.extensions="";var l=0,t=null,r=null,q=[],F=new TextEncoder,
+G=new TextDecoder;c.onopen=null;c.onmessage=null;c.onclose=null;c.onerror=null;Object.defineProperty(c,"readyState",{get:()=>l,enumerable:!0,configurable:!0});Object.defineProperty(c,"bufferedAmount",{get:()=>{var a=0;q.forEach(f=>{a+=typeof f==="string"?f.length:f.byteLength});return a},enumerable:!0,configurable:!0});var I=function(){var a;return((a=globalThis.crypto)==null?0:a.randomUUID)?globalThis.crypto.randomUUID():"xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g,f=>{var g=Math.random()*
+16|0;return(f==="x"?g:g&3|8).toString(16)})}();c.send=a=>{if(l===1)a instanceof Blob?a.arrayBuffer().then(f=>{k(f)}):k(a);else if(l===0)if(typeof a==="string")q.push(a);else if(a instanceof ArrayBuffer||ArrayBuffer.isView(a))q.push(h(a));else throw Error("Sending Blob is not supported before the connection is open.");else console.debug("WebSocket send called in CLOSING or CLOSED state; ignored.")};c.close=(a=1E3,f="")=>{if(l!==2&&l!==3){l=2;a={type:"close",code:a,reason:f,wasClean:a===1E3};var g;
+(g=t)==null||g.postMessage(a)}};Promise.resolve().then(()=>p(d));return c}A(B,EventTarget);var C=document.currentScript,D=C==null?void 0:C.getAttribute("ws-interception-config");if(!D)throw Error("WebSocket Interceptor: Missing ws-interception-config attribute in the script tag.");var E=JSON.parse(D);if(!E.parentOrigin||typeof E.parentOrigin!=="string")throw Error("WebSocket Interceptor: Invalid parentOrigin in ws-interception-config");
+(function(b){var d=Object.getOwnPropertyDescriptor(window,"WebSocket");if(!d||d.writable||d.configurable)d=Object.assign(function(e,h){try{let k=(new URL(e)).hostname;if(b.proxiedDomains.some(m=>k===m||k.endsWith(`.${m}`)))return new B(e,h,b.parentOrigin)}catch(k){throw window.parent.postMessage({type:"websocket_blocked",url:e,reason:"blocked_invalid_url"},b.parentOrigin),new DOMException(`WebSocket connection to '${e}' is not allowed in Canvas.`,"SecurityError");}window.parent.postMessage({type:"websocket_blocked",
+url:e,reason:"blocked_domain_not_allowlisted"},b.parentOrigin);throw new DOMException(`WebSocket connection to '${e}' is not allowed in Canvas.`,"SecurityError");},{CONNECTING:0,OPEN:1,CLOSING:2,CLOSED:3}),Object.defineProperty(window,"WebSocket",{value:d,writable:!1,configurable:!1})})({proxiedDomains:E.proxiedDomains||[],parentOrigin:E.parentOrigin});}).call(this);
+</script><script data-bard-client-injected="true">((function(modelInformation) {
+  const originalFetch = window.fetch;
+  // TODO: b/421908508 - Move these out of the script and match all generative AI model calls.
+  let googleLlmBaseApiUrls = [
+    'https://generativelanguage.googleapis.com/v1beta/models/' + modelInformation.textModelName + ':streamGenerateContent',
+    'https://generativelanguage.googleapis.com/v1beta/models/' + modelInformation.textModelName + ':generateContent',
+    'https://generativelanguage.googleapis.com/v1beta/models/' + modelInformation.imageModelName + ':predict',
+    'https://generativelanguage.googleapis.com/v1beta/models/' + modelInformation.imageModelName + ':predictLongRunning',
+    'https://generativelanguage.googleapis.com/v1beta/models/' + modelInformation.imageEditModelName + ':generateContent',
+    'https://generativelanguage.googleapis.com/v1beta/models/' + modelInformation.imageTransformModelName + ':generateContent',
+    'https://generativelanguage.googleapis.com/v1beta/models/' + modelInformation.videoModelName + ':predict',
+    'https://generativelanguage.googleapis.com/v1beta/models/' + modelInformation.videoModelName + ':predictLongRunning',
+    'https://generativelanguage.googleapis.com/v1beta/models/' + modelInformation.ttsModelName + ':generateContent',
+  ];
+  modelInformation.deprecatedTextModelNames.forEach((modelName) => {
+    googleLlmBaseApiUrls.push(
+      'https://generativelanguage.googleapis.com/v1beta/models/' + modelName + ':streamGenerateContent',
+      'https://generativelanguage.googleapis.com/v1beta/models/' + modelName + ':generateContent',
+    );
+  });
+  modelInformation.deprecatedImageModelNames.forEach((modelName) => {
+    googleLlmBaseApiUrls.push(
+      'https://generativelanguage.googleapis.com/v1beta/models/' + modelName + ':predict',
+      'https://generativelanguage.googleapis.com/v1beta/models/' + modelName + ':predictLongRunning',
+      'https://generativelanguage.googleapis.com/v1beta/models/' + modelName + ':generateContent',
+      'https://generativelanguage.googleapis.com/v1beta/models/' + modelName + ':streamGenerateContent',
+    );
+  });
+  modelInformation.deprecatedGenerateImageModelNames.forEach((modelName) => {
+    googleLlmBaseApiUrls.push(
+      'https://generativelanguage.googleapis.com/v1beta/models/' + modelName + ':generateContent',
+      'https://generativelanguage.googleapis.com/v1beta/models/' + modelName + ':streamGenerateContent',
+    );
+  });
+  modelInformation.deprecatedImageTransformModelNames.forEach((modelName) => {
+    googleLlmBaseApiUrls.push(
+      'https://generativelanguage.googleapis.com/v1beta/models/' + modelName + ':generateContent',
+      'https://generativelanguage.googleapis.com/v1beta/models/' + modelName + ':streamGenerateContent',
+    );
+  });
+
+  const pendingFetchResolvers = {};
+  let nextPromiseId = 0;
+
+  function handleStringInput(input, optionsArgument) {
+    const actualUrl = input;
+    const fetchCallArgs = [actualUrl, optionsArgument];
+    const effectiveOptions = optionsArgument || {};
+    const bodyForApiKeyCheck = effectiveOptions.body;
+    const bodyForPostMessage = effectiveOptions.body;
+    return { actualUrl, fetchCallArgs, effectiveOptions, bodyForApiKeyCheck, bodyForPostMessage };
+  }
+
+  function handleRequestInput(input, optionsArgument) {
+    const actualUrl = input.url;
+    const fetchCallArgs = [input, optionsArgument];
+    const effectiveOptions = { method: input.method, headers: new Headers(input.headers) };
+    let bodyForApiKeyCheck;
+    let bodyForPostMessage;
+
+    if (optionsArgument) {
+      if (optionsArgument.method) effectiveOptions.method = optionsArgument.method;
+      if (optionsArgument.headers) effectiveOptions.headers = new Headers(optionsArgument.headers);
+      if ('body' in optionsArgument) {
+        bodyForApiKeyCheck = optionsArgument.body;
+        bodyForPostMessage = optionsArgument.body;
+      } else {
+        bodyForApiKeyCheck = undefined;
+        bodyForPostMessage = input.body;
+      }
+    } else {
+      bodyForApiKeyCheck = undefined;
+      bodyForPostMessage = input.body;
+    }
+    return { actualUrl, fetchCallArgs, effectiveOptions, bodyForApiKeyCheck, bodyForPostMessage };
+  }
+
+  window.fetch = function(input, optionsArgument) {
+    let actualUrl;
+    let fetchCallArgs;
+    let effectiveOptions = {};
+    let bodyForApiKeyCheck;
+    let bodyForPostMessage;
+
+    if (typeof input === 'string') {
+      ({actualUrl, fetchCallArgs, effectiveOptions, bodyForApiKeyCheck, bodyForPostMessage} = handleStringInput(input, optionsArgument));
+    } else if (input instanceof Request) {
+      ({actualUrl, fetchCallArgs, effectiveOptions, bodyForApiKeyCheck, bodyForPostMessage} = handleRequestInput(input, optionsArgument));
+    } else {
+      return originalFetch.apply(window, [input, optionsArgument]);
+    }
+
+    effectiveOptions.method = effectiveOptions.method || 'GET';
+    if (!effectiveOptions.headers) {
+      effectiveOptions.headers = new Headers();
+    }
+
+
+    if (typeof actualUrl === 'string' && googleLlmBaseApiUrls.some((url) => actualUrl.startsWith(url))) {
+      let apiKeyIsNull = true;
+
+      const regex = new RegExp("models/([^:]+)");
+      const modelNameMatch = actualUrl.match(regex);
+      const modelName = modelNameMatch ? modelNameMatch[1] : 'unspecified';
+
+
+      try {
+        const urlObject = new URL(actualUrl);  // Use URL object for robust parsing
+        const apiKeyParam = urlObject.searchParams.get('key');
+        if (apiKeyParam) {
+          apiKeyIsNull = false;
+        }
+      } catch (e) {
+        // Continue checks even if URL parsing fails
+      }
+
+      if (apiKeyIsNull && effectiveOptions.headers) {
+        const h = new Headers(effectiveOptions.headers);
+        const apiKeyHeaderValue = h.get('X-API-Key') || h.get('x-api-key');
+        if (apiKeyHeaderValue) {
+          apiKeyIsNull = false;
+          return originalFetch.apply(window, fetchCallArgs);
+        }
+      }
+
+      if (apiKeyIsNull && effectiveOptions.method && ['POST', 'PUT', 'PATCH'].includes(effectiveOptions.method.toUpperCase()) && typeof bodyForApiKeyCheck === 'string') {
+        try {
+          const bodyData = JSON.parse(bodyForApiKeyCheck);
+          if (bodyData && bodyData.apiKey) {
+            apiKeyIsNull = false;
+            return originalFetch.apply(window, fetchCallArgs);
+          }
+        } catch (e) {
+          // Ignore JSON parsing errors
+        }
+      }
+
+      if(apiKeyIsNull) {
+        const promiseId = nextPromiseId++;
+        const promise = new Promise((resolve) => {
+          pendingFetchResolvers[promiseId] = (resolvedResponse) => {
+            delete pendingFetchResolvers[promiseId];
+            resolve(resolvedResponse);
+          };
+        });
+
+        let serializedBodyForPostMessage;
+        if (typeof bodyForPostMessage === 'string' || bodyForPostMessage == null) {
+            serializedBodyForPostMessage = bodyForPostMessage;
+        } else if (bodyForPostMessage instanceof ReadableStream) {
+            serializedBodyForPostMessage = null;
+        } else {
+            try {
+                serializedBodyForPostMessage = JSON.stringify(bodyForPostMessage);
+            } catch (e) {
+                serializedBodyForPostMessage = null;
+            }
+        }
+
+        const messageOptions = {
+            method: effectiveOptions.method,
+            headers: Object.fromEntries(new Headers(effectiveOptions.headers).entries()),
+            body: serializedBodyForPostMessage
+        };
+
+        window.parent.postMessage({
+          type: 'requestFetch',
+          url: actualUrl,
+          modelName: modelName,
+          options: messageOptions,
+          promiseId: promiseId,
+        }, '*');
+
+        return promise;
+      }
+      return originalFetch.apply(window, fetchCallArgs);
+    }
+    return originalFetch.apply(window, fetchCallArgs);
+  };
+
+  window.addEventListener('message', function(event) {
+    if (event.data && event.data.type === 'resolveFetch') {
+      const { promiseId, response } = event.data;
+      if (pendingFetchResolvers[promiseId]) {
+        try {
+          const reconstructedResponse = new Response(response.body, {
+            status: response.status,
+            statusText: response.statusText,
+            headers: new Headers(response.headers),
+          });
+          pendingFetchResolvers[promiseId](reconstructedResponse);
+        } catch (error) {
+          pendingFetchResolvers[promiseId](new Response(null, { status: 500, statusText: "Interceptor Response Reconstruction Error" }));
+        }
+      }
+    }
+  });
+
+}))({"textModelName":"gemini-3-flash-preview","imageModelName":"imagen-4.0-generate-001","imageEditModelName":"gemini-3.1-flash-image","imageTransformModelName":"gemini-3-pro-image","videoModelName":"veo-2.0-generate-001","ttsModelName":"gemini-2.5-flash-preview-tts","deprecatedTextModelNames":["gemini-2.0-flash","gemini-2.5-flash","gemini-2.5-flash-preview-04-17","gemini-2.5-flash-preview-05-20","gemini-2.5-flash-preview-09-2025"],"deprecatedImageModelNames":["imagen-3.0-generate-001","imagen-3.0-generate-002"],"deprecatedGenerateImageModelNames":["gemini-2.5-flash-image-preview","gemini-2.5-flash-image","gemini-3.1-flash-image-preview"],"deprecatedImageTransformModelNames":["gemini-3-pro-image-preview-11-2025"]})</script><script data-bard-client-injected="true">(function() {
+  const OVERLAY_SELECTOR =
+    'dialog[open], [role="dialog"], [role="alertdialog"], [role="menu"], [role="listbox"], [role="combobox"]';
+
+  function isVisibleOverlay(element) {
+    if (element.closest('[hidden], [aria-hidden="true"], [inert]')) {
+      return false;
+    }
+    if (window.getComputedStyle(element).visibility === 'hidden') {
+      return false;
+    }
+    for (let cur = element; cur; cur = cur.parentElement) {
+      if (window.getComputedStyle(cur).display === 'none') {
+        return false;
+      }
+    }
+    return true;
+  }
+
+  function hasOpenOverlay() {
+    const candidates = document.querySelectorAll(OVERLAY_SELECTOR);
+    for (let i = 0; i < candidates.length; i++) {
+      if (isVisibleOverlay(candidates[i])) {
+        return true;
+      }
+    }
+    try {
+      if (document.querySelector('[popover]:popover-open')) {
+        return true;
+      }
+    } catch (e) {
+      // Ignore engines that do not support :popover-open.
+    }
+    return false;
+  }
+
+  function isNonEmptySearchInput(target) {
+    return (
+      Boolean(target) &&
+      target.tagName === 'INPUT' &&
+      typeof target.type === 'string' &&
+      target.type.toLowerCase() === 'search' &&
+      typeof target.value === 'string' &&
+      target.value.length > 0
+    );
+  }
+
+  function shouldIgnoreEscape(event) {
+    return (
+      event.key !== 'Escape' ||
+      event.altKey ||
+      event.ctrlKey ||
+      event.metaKey ||
+      event.shiftKey ||
+      event.isComposing ||
+      event.repeat ||
+      event.keyCode === 229 ||
+      isNonEmptySearchInput(event.target)
+    );
+  }
+
+  let shouldIgnoreCaptureState = false;
+
+  window.addEventListener(
+    'keydown',
+    function(event) {
+      if (event.key === 'Escape') {
+        shouldIgnoreCaptureState =
+          hasOpenOverlay() || isNonEmptySearchInput(event.target);
+      }
+    },
+    {capture: true},
+  );
+
+  window.addEventListener('keydown', function(event) {
+    if (
+      shouldIgnoreEscape(event) ||
+      event.defaultPrevented ||
+      shouldIgnoreCaptureState
+    ) {
+      return;
+    }
+    const wasBlockedOnCapture = shouldIgnoreCaptureState;
+    queueMicrotask(function() {
+      if (event.defaultPrevented || wasBlockedOnCapture) {
+        return;
+      }
+      if (window.parent && window.parent !== window) {
+        window.parent.postMessage({'type': 'escapeKey'}, '*');
+      }
+    });
+  });
+})();</script><script data-bard-client-injected="true">(function() {
+  function normalizeSlug(str) {
+    try {
+      return str
+        .trim()
+        .toLowerCase()
+        .replace(/[^p{L}p{N}s_-]/gu, '')
+        .replace(/s+/g, '-');
+    } catch (e) {
+      return str
+        .trim()
+        .toLowerCase()
+        .replace(/[^a-z0-9s_-]/g, '')
+        .replace(/s+/g, '-');
+    }
+  }
+
+  function findTargetElement(hash) {
+    if (!hash || hash === '#') {
+      return null;
+    }
+    const rawId = hash.startsWith('#') ? hash.slice(1) : hash;
+    let decodedId = rawId;
+    try {
+      decodedId = decodeURIComponent(rawId);
+    } catch (e) {
+      // Ignore URI malformed errors.
+    }
+
+    // 1. Direct ID match (raw and decoded).
+    let target = document.getElementById(rawId) || document.getElementById(decodedId);
+    if (target) {
+      return target;
+    }
+
+    // 2. Name attribute match (<a name="...">).
+    try {
+      if (typeof CSS !== 'undefined' && CSS.escape) {
+        target =
+          document.querySelector('[name="' + CSS.escape(rawId) + '"]') ||
+          document.querySelector('[name="' + CSS.escape(decodedId) + '"]');
+      } else {
+        const namedElements = document.getElementsByName(rawId);
+        if (namedElements && namedElements.length > 0) {
+          return namedElements[0];
+        }
+      }
+    } catch (e) {
+      // Ignore querySelector syntax errors.
+    }
+    if (target) {
+      return target;
+    }
+
+    // 3. Match heading text by slug (for Markdown TOCs where headings lack explicit IDs).
+    const targetSlug = normalizeSlug(decodedId);
+    if (targetSlug) {
+      for (const heading of document.querySelectorAll('h1, h2, h3, h4, h5, h6')) {
+        if (normalizeSlug(heading.textContent || '') === targetSlug) {
+          return heading;
+        }
+      }
+    }
+
+    return null;
+  }
+
+  document.addEventListener('click', function(event) {
+    const target = event.target;
+    const anchor = target && typeof target.closest === 'function' ? target.closest('a') : null;
+    if (!anchor) {
+      return;
+    }
+
+    const href = anchor.getAttribute('href');
+    if (
+      !href ||
+      href.trim().toLowerCase().startsWith('javascript:') ||
+      anchor.hasAttribute('download')
+    ) {
+      return;
+    }
+
+    // Check if the link is an in-page hash / anchor link.
+    if (href.startsWith('#')) {
+      event.preventDefault();
+      const targetElement = findTargetElement(href);
+      if (targetElement) {
+        targetElement.scrollIntoView({behavior: 'smooth', block: 'start'});
+      }
+      return;
+    }
+
+    // Check if the URL has the same origin/pathname but with a hash.
+    try {
+      const url = new URL(anchor.href, window.location.href);
+      if (
+        url.hash &&
+        url.origin === window.location.origin &&
+        url.pathname === window.location.pathname
+      ) {
+        event.preventDefault();
+        const targetElement = findTargetElement(url.hash);
+        if (targetElement) {
+          targetElement.scrollIntoView({behavior: 'smooth', block: 'start'});
+        }
+        return;
+      }
+    } catch (e) {
+      // Fall through if URL parsing fails.
+    }
+
+    // For all external or full navigation links, prevent iframe-level navigation
+    // (which breaks in AGSA WebView or sandboxed iframes) and ensure they open
+    // safely in a new tab/window.
+    if (anchor.target !== '_blank') {
+      event.preventDefault();
+      window.open(anchor.href, '_blank', 'noopener,noreferrer');
+    }
+  }, {capture: true});
+})();</script><script data-bard-client-injected="true">(function(){'use strict';function a(){window.parent.postMessage({type:"interaction"},"*")}window.addEventListener("click",a,{capture:!0,passive:!0});window.addEventListener("touchstart",a,{capture:!0,passive:!0});window.addEventListener("keydown",a,{capture:!0,passive:!0});}).call(this);
+</script><script data-bard-client-injected="true">(function() {
+  const originalConsoleLog = console.log;
+  const originalConsoleError = console.error;
+
+    /**
+   * Normalizes an error event or a promise rejection reason into a structured error object.
+   * @param {*} errorEventOrReason The error object or reason.
+   * @return {object} Structured error data { message, name, stack }.
+   */
+  function getErrorObject(errorEventOrReason) {
+    if (errorEventOrReason instanceof Error) {
+      return {
+        message: errorEventOrReason.message,
+        name: errorEventOrReason.name,
+        stack: errorEventOrReason.stack,
+      };
+    }
+    // Fallback for non-Error objects.
+    try {
+      return {
+        message: JSON.stringify(errorEventOrReason),
+        name: 'UnknownErrorType',
+        stack: null,
+      };
+    } catch (e) {
+      return {
+        message: String(errorEventOrReason),
+        name: 'UnknownErrorTypeNonStringifiable',
+        stack: null,
+      };
+    }
+  }
+
+  /**
+   * Converts an array of arguments (from log/error) into a single string.
+   * Handles Error objects specially to include their message and stack.
+   * @param {Array<*>} args - Arguments passed to console methods.
+   * @return {string} A string representation of the arguments.
+   */
+  function stringifyArgs(args) {
+    return args
+      .map((arg) => {
+        if (arg instanceof Error) {
+          const {message, stack} = arg;
+          return `Error: ${message}${stack ? ('\nStack: ' + stack) : ''}`;
+        }
+        if (typeof arg === 'object' && arg !== null) {
+          try {
+            return JSON.stringify(arg);
+          } catch (error) {
+            return '[Circular Object]';
+          }
+        } else {
+          return String(arg);
+        }
+      })
+      .join(' ');
+  }
+
+  console.log = function(...args) {
+    const logString = stringifyArgs(args);
+    window.parent.postMessage({ type: 'log', message: logString }, '*');
+    originalConsoleLog.apply(console, args);
+  };
+
+  console.error = function(...args) {
+    let errorData;
+    if (args.length > 0 && args[0] instanceof Error) {
+      const err = args[0];
+      // If the first arg is an Error, capture its details.
+      errorData = {
+        type: 'error',
+        source: 'CONSOLE_ERROR',
+        ...getErrorObject(err),
+        rawArgsString: stringifyArgs(args.slice(1)),
+        timestamp: new Date().toISOString(),
+      };
+    } else {
+      // If not an Error object, treat all args as a general error message.
+      errorData = {
+        type: 'error',
+        source: 'CONSOLE_ERROR',
+        message: stringifyArgs(args),
+        name: 'ConsoleLoggedError',
+        stack: null,
+        timestamp: new Date().toISOString(),
+      };
+    }
+    window.parent.postMessage(errorData, '*');
+    originalConsoleError.apply(console, args);
+  };
+
+  // Listen for global unhandled synchronous errors.
+  window.addEventListener('error', function(event) {
+    const errorDetails = event.error ? getErrorObject(event.error) : {
+      message: event.message,
+      name: 'GlobalError',
+      stack: null,
+      filename: event.filename,
+      lineno: event.lineno,
+      colno: event.colno,
+    };
+
+    window.parent.postMessage({
+      type: 'error',
+      source: 'global',
+      ...errorDetails,
+      message: errorDetails.message || event.message,
+      timestamp: new Date().toISOString(),
+    }, '*');
+  });
+
+  // Listen for unhandled promise rejections (asynchronous errors).
+  window.addEventListener('unhandledrejection', function(event) {
+    const errorDetails = getErrorObject(event.reason);
+
+    window.parent.postMessage({
+      type: 'error',
+      source: 'unhandledrejection',
+      ...errorDetails,
+      message: errorDetails.message || 'Unhandled Promise Rejection',
+      timestamp: new Date().toISOString(),
+    }, '*');
+  });
+
+})();</script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>墨韻祈福・共修大殿（多人即時連線版）</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="">
+  <link href="https://fonts.googleapis.com/css2?family=Liu+Jian+Mao+Cao&amp;family=Long+Cang&amp;family=Ma+Shan+Zheng&amp;family=Noto+Serif+TC:wght@600;900&amp;family=Yuji+Boku&amp;family=Yuji+Mai&amp;family=Yuji+Syuku&amp;family=Zhi+Mang+Xing&amp;display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg-void: #0b0908;
+      --panel-glass: rgba(24, 19, 15, 0.9);
+      --gold: #d4af37;
+      --gold-bright: #f5e6b3;
+      --cinnabar: #b82924;
+      --cinnabar-glow: #e63932;
+      --jade: #3e8e75;
+      --ink-deep: #110f0d;
+      --paper-antique: #f2e8d5;
+      --text-main: #efe6d8;
+      --text-dim: #9e907a;
+
+      --font-xingshu-ltx: 'Zhi Mang Xing', 'Yuji Boku', 'Yuji Syuku', 'Ma Shan Zheng', 'BiauKai', 'DFKai-SB', '標楷體', serif;
+      --font-xingshu-huang: 'Liu Jian Mao Cao', 'Yuji Mai', 'Yuji Syuku', 'Long Cang', 'BiauKai', 'DFKai-SB', '標楷體', serif;
+      --font-xingshu-shu: 'Ma Shan Zheng', 'Yuji Syuku', 'Yuji Boku', 'BiauKai', 'DFKai-SB', '標楷體', serif;
+      --font-xingshu-yan: 'Long Cang', 'Yuji Mai', 'Yuji Syuku', 'BiauKai', 'DFKai-SB', '標楷體', serif;
+      --font-ui: 'Noto Serif TC', 'PMingLiU', serif;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      user-select: none;
+    }
+
+    body {
+      background: radial-gradient(circle at 50% 35%, #261c15 0%, #100c09 70%, #070504 100%);
+      color: var(--text-main);
+      font-family: var(--font-ui);
+      min-height: 100vh;
+      overflow-x: hidden;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .temple-aura {
+      position: fixed;
+      top: 38%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: 620px;
+      height: 620px;
+      background: radial-gradient(circle, rgba(212, 175, 55, 0.12) 0%, rgba(184, 41, 36, 0.04) 45%, transparent 72%);
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    /* 頂部標題與多人連線狀態列 */
+    header {
+      width: 100%;
+      max-width: 1220px;
+      padding: 12px 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      z-index: 15;
+      border-bottom: 1px solid rgba(212, 175, 55, 0.25);
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .brand-seal {
+      background: var(--cinnabar);
+      color: #fff;
+      font-family: var(--font-xingshu-shu);
+      padding: 3px 8px;
+      border-radius: 3px;
+      font-size: 1.05rem;
+      letter-spacing: 2px;
+      box-shadow: 0 0 14px rgba(184, 41, 36, 0.55);
+      border: 1px solid rgba(255, 255, 255, 0.3);
+    }
+
+    .brand h1 {
+      font-family: var(--font-xingshu-ltx);
+      font-size: 1.75rem;
+      color: var(--gold-bright);
+      letter-spacing: 3px;
+      font-weight: 400;
+    }
+
+    /* 共修殿堂與房號切換列 */
+    .temple-room-bar {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      background: rgba(14, 11, 8, 0.9);
+      border: 1px solid rgba(212, 175, 55, 0.38);
+      padding: 5px 12px;
+      border-radius: 24px;
+      flex-wrap: wrap;
+    }
+
+    .online-dot {
+      width: 9px;
+      height: 9px;
+      border-radius: 50%;
+      background: #4ade80;
+      box-shadow: 0 0 8px #4ade80;
+      display: inline-block;
+      animation: breathe 2s infinite;
+    }
+
+    .online-dot.offline {
+      background: #f59e0b;
+      box-shadow: 0 0 8px #f59e0b;
+    }
+
+    @keyframes breathe {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.45; transform: scale(0.85); }
+    }
+
+    .room-label {
+      font-size: 0.82rem;
+      color: var(--gold-bright);
+    }
+
+    .room-btn {
+      background: rgba(212, 175, 55, 0.16);
+      border: 1px solid rgba(212, 175, 55, 0.4);
+      color: var(--gold-bright);
+      padding: 3px 10px;
+      border-radius: 14px;
+      font-size: 0.78rem;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .room-btn:hover {
+      background: rgba(212, 175, 55, 0.32);
+    }
+
+    /* 個人與大殿香火錢 HUD */
+    .merit-hud {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      background: rgba(16, 12, 9, 0.88);
+      border: 1px solid rgba(212, 175, 55, 0.42);
+      padding: 5px 16px;
+      border-radius: 30px;
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.55);
+      flex-wrap: wrap;
+    }
+
+    .merit-stat {
+      display: flex;
+      align-items: baseline;
+      gap: 4px;
+    }
+
+    .merit-label {
+      font-size: 0.78rem;
+      color: var(--text-dim);
+    }
+
+    .merit-value {
+      font-family: var(--font-xingshu-shu);
+      font-size: 1.38rem;
+      color: var(--gold-bright);
+    }
+
+    .rank-badge {
+      background: linear-gradient(135deg, #6e4e22, #b88b4a);
+      color: #140f0a;
+      font-weight: 900;
+      font-size: 0.76rem;
+      padding: 3px 9px;
+      border-radius: 12px;
+    }
+
+    .capacity-badge {
+      background: rgba(212, 175, 55, 0.14);
+      border: 1px solid rgba(212, 175, 55, 0.35);
+      color: var(--gold-bright);
+      font-size: 0.78rem;
+      padding: 2px 9px;
+      border-radius: 12px;
+    }
+
+    .combo-badge {
+      background: var(--cinnabar);
+      color: #fff;
+      font-size: 0.76rem;
+      font-weight: 700;
+      padding: 2px 8px;
+      border-radius: 10px;
+      display: none;
+    }
+
+    .toolbar {
+      display: flex;
+      gap: 7px;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+
+    .tool-btn {
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(212, 175, 55, 0.32);
+      color: var(--gold-bright);
+      padding: 6px 11px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-family: var(--font-ui);
+      font-size: 0.82rem;
+      transition: all 0.2s ease;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .tool-btn:hover {
+      background: rgba(212, 175, 55, 0.18);
+      border-color: var(--gold);
+    }
+
+    .tool-btn.active {
+      background: rgba(212, 175, 55, 0.28);
+      border-color: var(--gold);
+      color: #fff;
+    }
+
+    /* 主舞台區 */
+    main {
+      position: relative;
+      width: 100%;
+      max-width: 1220px;
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      z-index: 5;
+      padding: 4px 14px;
+    }
+
+    .canvas-stage {
+      position: relative;
+      width: 100%;
+      max-width: 820px;
+      height: 430px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    #incenseCanvas {
+      width: 100%;
+      height: 100%;
+      cursor: pointer;
+      touch-action: none;
+      filter: drop-shadow(0 20px 32px rgba(0, 0, 0, 0.8));
+    }
+
+    /* 即時動態跑馬燈 */
+    .live-ticker {
+      position: absolute;
+      top: 6px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: rgba(18, 14, 11, 0.86);
+      border: 1px solid rgba(212, 175, 55, 0.35);
+      padding: 5px 18px;
+      border-radius: 20px;
+      font-size: 0.83rem;
+      color: var(--gold-bright);
+      letter-spacing: 0.5px;
+      pointer-events: none;
+      backdrop-filter: blur(4px);
+      white-space: nowrap;
+      max-width: 94vw;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      box-shadow: 0 4px 14px rgba(0, 0, 0, 0.6);
+    }
+
+    /* 香柱懸浮名牌提示 */
+    .stick-tooltip {
+      position: absolute;
+      background: rgba(20, 15, 11, 0.94);
+      border: 1px solid var(--gold);
+      color: var(--gold-bright);
+      padding: 6px 12px;
+      border-radius: 8px;
+      font-size: 0.82rem;
+      pointer-events: none;
+      opacity: 0;
+      transform: translate(-50%, -115%);
+      transition: opacity 0.18s ease;
+      z-index: 25;
+      box-shadow: 0 6px 18px rgba(0,0,0,0.75);
+      white-space: nowrap;
+    }
+
+    .stick-tooltip.show {
+      opacity: 1;
+    }
+
+    /* 儀式操作與眾籌升級按鈕列 */
+    .ritual-actions {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 10px;
+      z-index: 12;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+
+    .btn-ritual {
+      background: linear-gradient(145deg, #2d2219, #19130e);
+      border: 1px solid var(--gold);
+      color: var(--gold-bright);
+      padding: 9px 16px;
+      border-radius: 8px;
+      font-family: var(--font-xingshu-shu);
+      font-size: 1.2rem;
+      letter-spacing: 2px;
+      cursor: pointer;
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.55);
+      transition: all 0.2s ease;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .btn-ritual:hover {
+      background: linear-gradient(145deg, #3e2f23, #241b14);
+      box-shadow: 0 0 20px rgba(212, 175, 55, 0.38);
+      transform: translateY(-2px);
+    }
+
+    .btn-ritual:active {
+      transform: scale(0.96);
+    }
+
+    .btn-primary {
+      background: linear-gradient(145deg, #b82924, #821814);
+      border: 1px solid #f28580;
+      color: #fff;
+    }
+
+    .btn-primary:hover {
+      background: linear-gradient(145deg, #d1322c, #991d18);
+      box-shadow: 0 0 24px rgba(230, 57, 50, 0.55);
+    }
+
+    .btn-upgrade {
+      background: linear-gradient(145deg, #4a3513, #261b09);
+      border: 1px solid #f5e6b3;
+      color: #f5e6b3;
+    }
+
+    .btn-upgrade:hover {
+      background: linear-gradient(145deg, #694b1b, #38280e);
+      box-shadow: 0 0 22px rgba(245, 230, 179, 0.45);
+    }
+
+    /* 底部祈福控制面板 */
+    .control-deck {
+      width: 100%;
+      max-width: 880px;
+      background: var(--panel-glass);
+      border: 1px solid rgba(212, 175, 55, 0.3);
+      border-radius: 14px;
+      padding: 13px 18px;
+      margin-bottom: 12px;
+      backdrop-filter: blur(12px);
+      box-shadow: 0 14px 38px rgba(0, 0, 0, 0.7);
+      z-index: 10;
+    }
+
+    .category-tabs {
+      display: flex;
+      gap: 7px;
+      margin-bottom: 9px;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+
+    .cat-btn {
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid rgba(212, 175, 55, 0.22);
+      color: var(--text-dim);
+      padding: 4px 12px;
+      border-radius: 20px;
+      font-family: var(--font-ui);
+      font-size: 0.84rem;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .cat-btn:hover {
+      color: var(--gold-bright);
+      border-color: rgba(212, 175, 55, 0.5);
+    }
+
+    .cat-btn.active {
+      background: rgba(212, 175, 55, 0.22);
+      border-color: var(--gold);
+      color: var(--gold-bright);
+      font-weight: 700;
+    }
+
+    .preset-chips {
+      display: flex;
+      gap: 7px;
+      flex-wrap: wrap;
+      justify-content: center;
+      margin-bottom: 9px;
+    }
+
+    .chip {
+      background: rgba(184, 41, 36, 0.15);
+      border: 1px solid rgba(230, 57, 50, 0.38);
+      color: #f5dad8;
+      padding: 3px 11px;
+      border-radius: 6px;
+      font-family: var(--font-xingshu-shu);
+      font-size: 1.12rem;
+      letter-spacing: 2px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .chip:hover {
+      background: rgba(184, 41, 36, 0.34);
+      border-color: #f28580;
+    }
+
+    .custom-wish-row {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+
+    .nickname-input {
+      width: 135px;
+      background: rgba(10, 8, 6, 0.85);
+      border: 1px solid rgba(212, 175, 55, 0.38);
+      border-radius: 8px;
+      padding: 8px 10px;
+      color: var(--gold-bright);
+      font-family: var(--font-ui);
+      font-size: 0.92rem;
+      outline: none;
+      user-select: text;
+    }
+
+    .wish-input {
+      flex: 1;
+      min-width: 180px;
+      background: rgba(10, 8, 6, 0.85);
+      border: 1px solid rgba(212, 175, 55, 0.38);
+      border-radius: 8px;
+      padding: 7px 13px;
+      color: var(--gold-bright);
+      font-family: var(--font-xingshu-shu);
+      font-size: 1.32rem;
+      letter-spacing: 3px;
+      outline: none;
+      user-select: text;
+    }
+
+    .wish-input:focus, .nickname-input:focus {
+      border-color: var(--gold);
+    }
+
+    .style-select {
+      background: rgba(25, 20, 16, 0.94);
+      border: 1px solid rgba(212, 175, 55, 0.38);
+      color: var(--gold-bright);
+      padding: 8px 10px;
+      border-radius: 8px;
+      font-family: var(--font-ui);
+      font-size: 0.86rem;
+      cursor: pointer;
+      outline: none;
+    }
+
+    /* =========================================================
+       通用彈窗樣式
+       ========================================================= */
+    .modal-backdrop {
+      position: fixed;
+      inset: 0;
+      background: rgba(6, 5, 4, 0.88);
+      backdrop-filter: blur(8px);
+      z-index: 125;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+
+    .modal-backdrop.show {
+      display: flex;
+    }
+
+    .modal-card {
+      background: linear-gradient(180deg, #281e16 0%, #140f0b 100%);
+      border: 2px solid var(--gold);
+      border-radius: 16px;
+      padding: 24px 28px;
+      max-width: 540px;
+      width: 100%;
+      box-shadow: 0 24px 60px rgba(0, 0, 0, 0.92);
+    }
+
+    .modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 14px;
+      border-bottom: 1px solid rgba(212, 175, 55, 0.28);
+      padding-bottom: 10px;
+    }
+
+    .modal-header h2 {
+      font-family: var(--font-xingshu-ltx);
+      font-size: 1.8rem;
+      color: var(--gold-bright);
+      font-weight: 400;
+    }
+
+    /* 眾籌進度條 */
+    .crowdfund-progress-wrap {
+      background: rgba(0, 0, 0, 0.5);
+      border: 1px solid rgba(212, 175, 55, 0.35);
+      border-radius: 12px;
+      padding: 14px;
+      margin-bottom: 16px;
+    }
+
+    .progress-bar-bg {
+      width: 100%;
+      height: 14px;
+      background: rgba(255, 255, 255, 0.08);
+      border-radius: 8px;
+      overflow: hidden;
+      margin: 8px 0;
+    }
+
+    .progress-bar-fill {
+      height: 100%;
+      background: linear-gradient(90deg, #b82924, #d4af37, #f5e6b3);
+      width: 0%;
+      transition: width 0.4s ease;
+    }
+
+    .donate-btn-group {
+      display: flex;
+      gap: 10px;
+      justify-content: center;
+      flex-wrap: wrap;
+      margin-top: 12px;
+    }
+
+    /* 房號輸入與列表 */
+    .room-input-row {
+      display: flex;
+      gap: 8px;
+      margin: 12px 0;
+    }
+
+    .room-code-input {
+      flex: 1;
+      background: rgba(10, 8, 6, 0.88);
+      border: 1px solid var(--gold);
+      border-radius: 8px;
+      padding: 9px 12px;
+      color: var(--gold-bright);
+      font-family: var(--font-ui);
+      font-size: 1rem;
+      outline: none;
+      user-select: text;
+    }
+
+    .preset-rooms {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin-top: 10px;
+    }
+
+    .share-actions-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin-top: 14px;
+    }
+
+    @media (max-width: 480px) {
+      .share-actions-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    /* 木魚節奏小遊戲 */
+    .rhythm-arena {
+      position: relative;
+      width: 200px;
+      height: 200px;
+      margin: 0 auto 16px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+    }
+
+    .target-ring {
+      position: absolute;
+      width: 96px;
+      height: 96px;
+      border-radius: 50%;
+      border: 3px solid var(--gold);
+      box-shadow: 0 0 18px rgba(212, 175, 55, 0.45);
+    }
+
+    .pulse-ring {
+      position: absolute;
+      width: 200px;
+      height: 200px;
+      border-radius: 50%;
+      border: 3px solid #f28580;
+      pointer-events: none;
+    }
+
+    .wooden-fish-btn {
+      width: 82px;
+      height: 82px;
+      border-radius: 50%;
+      background: radial-gradient(circle at 35% 35%, #8c5a2b, #3d2410);
+      border: 2px solid var(--gold-bright);
+      color: var(--gold-bright);
+      font-family: var(--font-xingshu-shu);
+      font-size: 1.45rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 6px 20px rgba(0, 0, 0, 0.7);
+      z-index: 2;
+    }
+
+    /* =========================================================
+       集字行書帖宣紙畫卷
+       ========================================================= */
+    .calligraphy-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(6, 5, 4, 0.86);
+      backdrop-filter: blur(9px);
+      z-index: 130;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.45s ease;
+    }
+
+    .calligraphy-overlay.show {
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    .xuan-scroll {
+      position: relative;
+      background-color: var(--paper-antique);
+      background-image:
+        radial-gradient(rgba(196, 154, 69, 0.28) 1.2px, transparent 0),
+        radial-gradient(rgba(140, 114, 72, 0.14) 1px, transparent 0),
+        linear-gradient(180deg, rgba(218, 200, 168, 0.55) 0%, rgba(242, 232, 213, 0.96) 14%, rgba(242, 232, 213, 0.96) 86%, rgba(218, 200, 168, 0.55) 100%);
+      background-size: 46px 46px, 19px 19px, 100% 100%;
+      color: var(--ink-deep);
+      padding: 40px 52px;
+      border-radius: 3px;
+      border-top: 13px solid #4d311c;
+      border-bottom: 13px solid #4d311c;
+      box-shadow: 0 28px 65px rgba(0, 0, 0, 0.92), inset 0 0 48px rgba(153, 126, 84, 0.38);
+      max-width: 92vw;
+      min-width: 320px;
+      min-height: 440px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      transform: scaleY(0.08);
+      transition: transform 0.58s cubic-bezier(0.22, 1, 0.36, 1);
+    }
+
+    .calligraphy-overlay.show .xuan-scroll {
+      transform: scaleY(1);
+    }
+
+    .xuan-scroll::before,
+    .xuan-scroll::after {
+      content: '';
+      position: absolute;
+      left: -20px;
+      right: -20px;
+      height: 15px;
+      background: linear-gradient(90deg, #24150b, #694226 18%, #8f5d38 50%, #694226 82%, #24150b);
+      border-radius: 8px;
+      box-shadow: 0 5px 12px rgba(0, 0, 0, 0.65);
+    }
+    .xuan-scroll::before { top: -14px; }
+    .xuan-scroll::after { bottom: -14px; }
+
+    .scroll-rubric {
+      font-family: var(--font-ui);
+      font-size: 0.85rem;
+      color: #786346;
+      letter-spacing: 4px;
+      margin-bottom: 18px;
+      border-bottom: 1px solid rgba(120, 99, 70, 0.32);
+      padding-bottom: 6px;
+    }
+
+    .calligraphy-stage {
+      writing-mode: vertical-rl;
+      text-orientation: upright;
+      font-size: clamp(2.8rem, 6.2vw, 4.5rem);
+      line-height: 1.38;
+      letter-spacing: 0.08em;
+      color: var(--ink-deep);
+      min-height: 240px;
+      max-height: 54vh;
+      display: flex;
+      flex-wrap: wrap;
+      align-content: center;
+      justify-content: center;
+      padding: 14px 24px;
+      position: relative;
+      filter: url(#inkBleedFilter);
+    }
+
+    .xingshu-char {
+      display: inline-block;
+      opacity: 0;
+      transform-origin: center center;
+      animation: brushStrokeReveal 0.62s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    }
+
+    @keyframes brushStrokeReveal {
+      0% {
+        opacity: 0;
+        filter: blur(9px);
+        transform: translate(var(--tx, 0px), -14px) scale(calc(var(--sc, 1) * 1.48)) rotate(calc(var(--rot, 0deg) - 7deg));
+      }
+      55% {
+        opacity: 0.94;
+        filter: blur(0.8px);
+        transform: translate(var(--tx, 0px), 2px) scale(calc(var(--sc, 1) * 0.96)) rotate(calc(var(--rot, 0deg) + 1.5deg));
+      }
+      100% {
+        opacity: var(--ink-alpha, 0.96);
+        filter: blur(0px);
+        transform: translate(var(--tx, 0px), 0px) scale(var(--sc, 1)) rotate(var(--rot, 0deg));
+        text-shadow: 1px 2px 3px rgba(17, 15, 13, 0.22);
+      }
+    }
+
+    .scroll-footer {
+      margin-top: 20px;
+      width: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 24px;
+    }
+
+    .scroll-colophon {
+      font-family: var(--font-xingshu-ltx);
+      font-size: 1.25rem;
+      color: #524330;
+      letter-spacing: 3px;
+    }
+
+    .red-seal {
+      width: 52px;
+      height: 52px;
+      border: 3px solid var(--cinnabar);
+      color: var(--cinnabar);
+      font-family: var(--font-xingshu-shu);
+      font-weight: 700;
+      font-size: 1.05rem;
+      line-height: 1.08;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      align-items: center;
+      justify-items: center;
+      padding: 3px;
+      border-radius: 4px;
+      background: rgba(184, 41, 36, 0.07);
+      opacity: 0;
+      transform: scale(2.3) rotate(-14deg);
+      box-shadow: inset 0 0 6px rgba(184, 41, 36, 0.28);
+      filter: url(#inkBleedFilter);
+    }
+
+    .red-seal.stamped {
+      animation: sealDrop 0.38s cubic-bezier(0.18, 0.89, 0.32, 1.28) forwards;
+    }
+
+    @keyframes sealDrop {
+      0% { opacity: 0; transform: scale(2.4) rotate(-15deg); }
+      70% { opacity: 1; transform: scale(0.92) rotate(-3deg); }
+      100% { opacity: 0.92; transform: scale(1) rotate(-4deg); }
+    }
+
+    .scroll-btn-row {
+      margin-top: 20px;
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+
+    .scroll-action-btn {
+      background: var(--ink-deep);
+      color: var(--paper-antique);
+      border: none;
+      padding: 8px 20px;
+      border-radius: 20px;
+      font-family: var(--font-ui);
+      font-size: 0.9rem;
+      letter-spacing: 1.5px;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+
+    .scroll-action-btn:hover {
+      background: var(--cinnabar);
+    }
+
+    /* 大殿即時香願榜抽屜 */
+    .history-drawer {
+      position: fixed;
+      top: 0;
+      right: -360px;
+      width: 340px;
+      max-width: 90vw;
+      height: 100vh;
+      background: rgba(18, 14, 11, 0.97);
+      border-left: 1px solid rgba(212, 175, 55, 0.35);
+      z-index: 115;
+      padding: 20px 18px;
+      transition: right 0.35s ease;
+      display: flex;
+      flex-direction: column;
+      backdrop-filter: blur(12px);
+    }
+
+    .history-drawer.open {
+      right: 0;
+    }
+
+    .drawer-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1px solid rgba(212, 175, 55, 0.25);
+      padding-bottom: 12px;
+      margin-bottom: 14px;
+    }
+
+    .drawer-header h3 {
+      font-family: var(--font-xingshu-shu);
+      color: var(--gold-bright);
+      font-size: 1.5rem;
+      letter-spacing: 2px;
+      font-weight: 400;
+    }
+
+    .wish-list {
+      flex: 1;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .wish-item {
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid rgba(212, 175, 55, 0.22);
+      border-radius: 8px;
+      padding: 10px 12px;
+      transition: border-color 0.2s;
+    }
+
+    .wish-item:hover {
+      border-color: var(--gold);
+    }
+
+    .wish-item-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 0.8rem;
+      color: var(--gold);
+      margin-bottom: 4px;
+    }
+
+    .wish-item-text {
+      font-size: 1.38rem;
+      color: var(--gold-bright);
+      letter-spacing: 2px;
+      margin-bottom: 6px;
+      cursor: pointer;
+    }
+
+    .wish-item-actions {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 0.78rem;
+      color: var(--text-dim);
+    }
+
+    .bless-btn {
+      background: rgba(184, 41, 36, 0.22);
+      border: 1px solid rgba(230, 57, 50, 0.45);
+      color: #f5dad8;
+      padding: 3px 9px;
+      border-radius: 12px;
+      font-size: 0.76rem;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .bless-btn:hover {
+      background: rgba(184, 41, 36, 0.45);
+    }
+
+    /* 提示氣泡 */
+    .toast-banner {
+      position: fixed;
+      bottom: 22px;
+      left: 50%;
+      transform: translateX(-50%) translateY(20px);
+      background: rgba(24, 19, 15, 0.96);
+      border: 1px solid var(--gold);
+      color: var(--gold-bright);
+      padding: 9px 20px;
+      border-radius: 28px;
+      font-size: 0.88rem;
+      box-shadow: 0 10px 28px rgba(0, 0, 0, 0.8);
+      opacity: 0;
+      pointer-events: none;
+      transition: all 0.3s ease;
+      z-index: 200;
+      white-space: nowrap;
+      max-width: 92vw;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .toast-banner.show {
+      opacity: 1;
+      transform: translateX(-50%) translateY(0);
+    }
+
+    @media (max-width: 720px) {
+      .canvas-stage { height: 340px; }
+      .brand h1 { font-size: 1.45rem; }
+      .xuan-scroll { padding: 30px 24px; }
+      .merit-hud { width: 100%; justify-content: center; }
+    }
+  </style>
+<script>window.__PRESET_SHARE__ = {"room":"public_hall","wish":"心想事成萬事勝意","tie":"lanting"};</script>
+</head>
+<body>
+  <svg width="0" height="0" style="position:absolute;pointer-events:none;">
+    <defs>
+      <filter id="inkBleedFilter" x="-10%" y="-10%" width="120%" height="120%">
+        <feTurbulence type="fractalNoise" baseFrequency="0.045" numOctaves="3" result="noise"></feTurbulence>
+        <feDisplacementMap in="SourceGraphic" in2="noise" scale="1.9" xChannelSelector="R" yChannelSelector="G"></feDisplacementMap>
+      </filter>
+    </defs>
+  </svg>
+
+  <div class="temple-aura"></div>
+
+  <header>
+    <div class="brand">
+      <span class="brand-seal">共修</span>
+      <h1>墨韻祈福大殿</h1>
+    </div>
+
+    <!-- 多人共修房號與在線善信指示器 -->
+    <div class="temple-room-bar">
+      <span class="online-dot" id="onlineDot"></span>
+      <span class="room-label">殿堂：<strong id="currentRoomLabel">大雄寶殿(公開)</strong></span>
+      <span class="room-label">｜同修：<strong id="onlineCount">1</strong> 人</span>
+      <button class="room-btn" id="openRoomModalBtn">🚪 切換/邀請房號</button>
+    </div>
+
+    <!-- 個人香火錢與共用寶鼎狀態 HUD -->
+    <div class="merit-hud">
+      <div class="merit-stat">
+        <span class="merit-label">💰 個人香火錢</span>
+        <span class="merit-value" id="personalCoins">565</span>
+      </div>
+      <span class="capacity-badge" id="capacityBadge">🔥 共用香位：2 / 15 柱</span>
+      <span class="rank-badge" id="burnerTierBadge">Lv.4 紫氣八寶巨鼎</span>
+      <span class="combo-badge" id="comboBadge" style="display: inline-block;">連擊 x6</span>
+    </div>
+
+    <div class="toolbar">
+      <button class="tool-btn" id="shareGameBtn" title="一鍵複製邀請連結或下載獨立網頁分享給親友">🔗 分享共修</button>
+      <button class="tool-btn" id="burnerStyleBtn" title="切換爐身釉色">🏺 古銅釉色</button>
+      <button class="tool-btn" id="soundToggleBtn" title="開啟/關閉禪意音效">🔔 音效：關</button>
+      <button class="tool-btn" id="historyBtn" title="查看大殿即時香願榜">📜 大殿香願榜 (<span id="wishCount">2</span>)</button>
+    </div>
+  </header>
+
+  <main>
+    <div class="canvas-stage">
+      <div class="live-ticker" id="liveTicker">🔥 善信「雲水行者#201」敬獻清香祈願：【心想事成萬事勝意】</div>
+      <div class="stick-tooltip" id="stickTooltip">善信祈福</div>
+      <canvas id="incenseCanvas" width="820" height="470"></canvas>
+    </div>
+
+    <div class="ritual-actions">
+      <button class="btn-ritual btn-primary" id="lightIncenseBtn">🔥 上香祈福 (+25錢)</button>
+      <button class="btn-ritual btn-upgrade" id="openUpgradeBtn">⚒️ 眾籌升級寶鼎 (<span id="treasuryMiniText">50/2200</span>)</button>
+      <button class="btn-ritual" id="zenRhythmBtn">🥁 敲木魚修行</button>
+      <button class="btn-ritual" id="bowBtn">🙏 誠心三拜 (<span id="bowCount">0</span>/3)</button>
+      <button class="btn-ritual" id="replayCalligraphyBtn">🖌️ 重現墨寶</button>
+    </div>
+
+    <section class="control-deck">
+      <div class="category-tabs" id="categoryTabs">
+        <button class="cat-btn active" data-cat="all">綜合祈願</button>
+        <button class="cat-btn" data-cat="study">金榜題名</button>
+        <button class="cat-btn" data-cat="career">事業騰飛</button>
+        <button class="cat-btn" data-cat="health">闔家安康</button>
+        <button class="cat-btn" data-cat="wealth">財源廣進</button>
+        <button class="cat-btn" data-cat="love">良緣美滿</button>
+      </div>
+
+      <div class="preset-chips" id="presetChips"><button class="chip">心想事成萬事勝意</button><button class="chip">風調雨順國泰民安</button><button class="chip">紫氣東來福壽雙全</button><button class="chip">吉星高照諸事順遂</button></div>
+
+      <div class="custom-wish-row">
+        <input type="text" id="nicknameInput" class="nickname-input" maxlength="8" placeholder="法號/暱稱">
+        <input type="text" id="wishInput" class="wish-input" maxlength="16" placeholder="輸入祈福語（全殿同修皆可見）" value="心想事成萬事勝意">
+        <select id="tieStyleSelector" class="style-select" title="選擇歷代名家行書帖筆意">
+          <option value="lanting">王羲之《蘭亭序》筆意</option>
+          <option value="huang">黃庭堅《松風閣》筆意</option>
+          <option value="shu">米芾《蜀素帖》筆意</option>
+          <option value="yan">顏真卿《祭姪稿》筆意</option>
+        </select>
+      </div>
+    </section>
+  </main>
+
+  <!-- 眾籌升級共用寶鼎彈窗 -->
+  <div class="modal-backdrop" id="upgradeModal">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h2>大殿眾籌重鑄寶鼎</h2>
+        <button class="tool-btn" id="closeUpgradeBtn">✕</button>
+      </div>
+      <p style="font-size:0.86rem; color:var(--text-dim); margin-bottom:12px;">
+        此香爐由全殿在線玩家共同供奉！任何玩家捐獻「香火錢」累積滿額後，大殿寶鼎將立即升級，為全體同修擴充共用香位並提升每秒自動香火收益。
+      </p>
+
+      <div class="crowdfund-progress-wrap">
+        <div style="display:flex; justify-content:space-between; font-size:0.9rem; color:var(--gold-bright);">
+          <span id="cfCurrentTierName">當前：Lv.4 紫氣八寶巨鼎 (上限 15 柱)</span>
+          <span id="cfNextTierName">下一階：Lv.5 九龍鎮殿天尊鼎 (上限 24 柱)</span>
+        </div>
+        <div class="progress-bar-bg">
+          <div class="progress-bar-fill" id="cfProgressBar" style="width: 2%;"></div>
+        </div>
+        <div style="display:flex; justify-content:space-between; font-size:0.82rem; color:var(--text-dim);">
+          <span>大殿香火公積金：<strong id="cfTreasuryAmount" style="color:var(--gold-bright)">50</strong> / <span id="cfTreasuryTarget">2200</span></span>
+          <span>您持有：💰 <strong id="cfPersonalCoins" style="color:var(--gold-bright)">565</strong></span>
+        </div>
+        <div class="donate-btn-group">
+          <button class="btn-ritual" style="font-size:1.05rem; padding:7px 14px;" data-donate="20">💰 捐獻 20 錢</button>
+          <button class="btn-ritual btn-primary" style="font-size:1.05rem; padding:7px 14px;" data-donate="50">🔥 捐獻 50 錢</button>
+          <button class="btn-ritual btn-upgrade" style="font-size:1.05rem; padding:7px 14px;" data-donate="150">✨ 慷慨解囊 150 錢</button>
+        </div>
+      </div>
+
+      <div style="font-size:0.8rem; color:var(--text-dim); line-height:1.6;">
+        • <strong>Lv.1 粗陶小爐</strong>：共用 3 柱香（每柱每秒 +2 錢）<br>
+        • <strong>Lv.2 黃銅雙耳爐</strong>：共用 6 柱香（每柱每秒 +4 錢）<br>
+        • <strong>Lv.3 宣德鎏金鼎</strong>：共用 10 柱香（每柱每秒 +7 錢）<br>
+        • <strong>Lv.4 紫氣八寶巨鼎</strong>：共用 15 柱香（每柱每秒 +12 錢）<br>
+        • <strong>Lv.5 九龍鎮殿天尊鼎</strong>：共用 24 柱香（每柱每秒 +20 錢）
+      </div>
+    </div>
+  </div>
+
+  <!-- 切換/邀請共修房號與分享彈窗 -->
+  <div class="modal-backdrop show" id="roomModal">
+    <div class="modal-card" style="max-width: 480px;">
+      <div class="modal-header">
+        <h2>共修殿堂與一鍵分享</h2>
+        <button class="tool-btn" id="closeRoomModalBtn">✕</button>
+      </div>
+      <p style="font-size:0.86rem; color:var(--text-dim); line-height:1.55;">
+        輸入相同的「共修房號」，即可與親友即時連線共用同一座香爐、互相看到對方的祈福香柱與行書墨寶！
+      </p>
+      <div class="room-input-row">
+        <input type="text" id="roomCodeInput" class="room-code-input" maxlength="16" placeholder="輸入自訂房號（如：8888 或 親友祈福）">
+        <button class="btn-ritual btn-primary" style="font-size:1.05rem; padding:8px 16px;" id="joinRoomBtn">進入殿堂</button>
+      </div>
+      <div style="font-size:0.82rem; color:var(--gold-bright); margin-top:8px;">快速傳送至熱門共修殿堂：</div>
+      <div class="preset-rooms">
+        <button class="room-btn" data-preset-room="public_hall">🏯 大雄寶殿 (公開主殿)</button>
+        <button class="room-btn" data-preset-room="exam_hall">🎓 文昌金榜殿</button>
+        <button class="room-btn" data-preset-room="wealth_hall">💰 五路財神殿</button>
+        <button class="room-btn" data-preset-room="love_hall">🌸 月老良緣殿</button>
+      </div>
+      <div class="share-actions-grid">
+        <button class="tool-btn" style="justify-content:center; padding:9px;" id="copyRoomInviteBtn">🔗 複製共修邀請連結</button>
+        <button class="tool-btn" style="justify-content:center; padding:9px;" id="downloadShareHtmlBtn">📥 下載獨立分享網頁 (.html)</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 木魚節奏禪修小遊戲彈窗 -->
+  <div class="modal-backdrop" id="zenRhythmOverlay">
+    <div class="modal-card" style="max-width: 420px; text-align: center;">
+      <div class="modal-header">
+        <h2>木魚節奏禪修</h2>
+        <button class="tool-btn" id="closeRhythmBtn">完成領獎</button>
+      </div>
+      <p style="font-size:0.86rem; color:var(--text-dim); margin-bottom:14px;">
+        當紅色光圈縮進金色圓環時點擊木魚（或按空白鍵）！
+      </p>
+      <div class="rhythm-arena" id="rhythmArena">
+        <div class="target-ring"></div>
+        <div class="pulse-ring" id="pulseRing" style="width: 183.8px; height: 183.8px;"></div>
+        <div class="wooden-fish-btn" id="woodenFishBtn">叩魚</div>
+      </div>
+      <div id="rhythmFeedback" style="height: 26px; font-family: var(--font-xingshu-shu); font-size: 1.4rem; color: rgb(245, 230, 179); margin-bottom: 10px;">錯過節拍・重新凝神</div>
+      <div style="display:flex; justify-content:space-around; background:rgba(0,0,0,0.35); padding:9px; border-radius:10px; font-size:0.9rem;">
+        <span>本輪賺取：<strong id="rhythmSessionScore" style="color:var(--gold-bright)">860</strong> 錢</span>
+        <span>最高連擊：<strong id="rhythmMaxCombo" style="color:#f28580">11</strong></span>
+      </div>
+    </div>
+  </div>
+
+  <!-- 集字行書帖・宣紙畫卷特效彈窗 -->
+  <div class="calligraphy-overlay" id="calligraphyOverlay">
+    <div class="xuan-scroll">
+      <div class="scroll-rubric" id="scrollRubric">集王羲之《蘭亭序》筆意・敬書祈願</div>
+      <div class="calligraphy-stage" id="calligraphyStage" style="font-family: var(--font-xingshu-ltx);"><span class="xingshu-char" style="--sc: 1.063; --rot: 0.22deg; --tx: -1.9px; --ink-alpha: 0.98; animation-delay: 0.24s;">心</span><span class="xingshu-char" style="--sc: 0.995; --rot: -1.62deg; --tx: -0.1px; --ink-alpha: 0.92; animation-delay: 0.37s;">想</span><span class="xingshu-char" style="--sc: 0.967; --rot: -6.47deg; --tx: 1.1px; --ink-alpha: 0.87; animation-delay: 0.5s;">事</span><span class="xingshu-char" style="--sc: 0.950; --rot: 0.10deg; --tx: 2.7px; --ink-alpha: 0.81; animation-delay: 0.63s;">成</span><span class="xingshu-char" style="--sc: 1.053; --rot: 0.46deg; --tx: -4.2px; --ink-alpha: 0.98; animation-delay: 0.76s;">萬</span><span class="xingshu-char" style="--sc: 0.989; --rot: 0.84deg; --tx: -1.5px; --ink-alpha: 0.92; animation-delay: 0.89s;">事</span><span class="xingshu-char" style="--sc: 0.993; --rot: 1.84deg; --tx: -1.6px; --ink-alpha: 0.87; animation-delay: 1.02s;">勝</span><span class="xingshu-char" style="--sc: 0.963; --rot: -2.48deg; --tx: 2.2px; --ink-alpha: 0.81; animation-delay: 1.15s;">意</span></div>
+      <div class="scroll-footer">
+        <div class="scroll-colophon" id="scrollColophon">善信「雲水行者#201」沐手敬書</div>
+        <div class="red-seal stamped" id="redSealStamp">
+          <span>心</span><span>誠</span>
+          <span>則</span><span>靈</span>
+        </div>
+      </div>
+      <div class="scroll-btn-row">
+        <button class="scroll-action-btn" style="background:var(--cinnabar);" id="scrollShareLinkBtn">🔗 複製此墨寶連結</button>
+        <button class="scroll-action-btn" id="closeScrollBtn">收起畫卷・共觀香煙</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 誠心三拜靈籤彈窗 -->
+  <div class="modal-backdrop" id="fortuneModal">
+    <div class="modal-card" style="max-width: 400px; text-align: center;">
+      <div style="display:inline-block; background:var(--cinnabar); color:#fff; font-family:var(--font-xingshu-shu); font-size:1.6rem; padding:4px 20px; border-radius:4px; letter-spacing:4px; margin-bottom:12px;" id="fortuneRank">上上大吉</div>
+      <div style="font-family:var(--font-xingshu-ltx); font-size:1.65rem; line-height:1.75; color:var(--gold-bright); margin:12px 0; letter-spacing:3px;" id="fortunePoem">雲開見月明<br>萬里好前程</div>
+      <div style="font-size:0.92rem; color:var(--text-dim); line-height:1.6; margin-bottom:18px;" id="fortuneDesc">心誠則靈，所求之事正逢順風順水之機。</div>
+      <button class="btn-ritual" style="margin: 0 auto;" id="closeFortuneBtn">感恩收籤 (+60香火錢)</button>
+    </div>
+  </div>
+
+  <!-- 大殿即時香願榜抽屜 -->
+  <aside class="history-drawer" id="historyDrawer">
+    <div class="drawer-header">
+      <h3>大殿即時香願榜</h3>
+      <button class="tool-btn" id="closeDrawerBtn">✕</button>
+    </div>
+    <p style="font-size:0.78rem; color:var(--text-dim); margin-bottom:10px;">
+      點擊任意同修的祈福語可展開其行書墨寶，點擊「隨喜讚歎」雙方皆可獲香火錢！
+    </p>
+    <div class="wish-list" id="wishList"><div class="wish-item">
+          <div class="wish-item-top">
+            <span>🕯️ 雲水行者#201 (我)</span>
+            <span>王羲之</span>
+          </div>
+          <div class="wish-item-text" style="font-family:var(--font-xingshu-ltx)">心想事成萬事勝意</div>
+          <div class="wish-item-actions">
+            <span>點擊文字賞析墨寶 🖌️</span>
+            <button class="bless-btn">🙏 隨喜讚歎 (0)</button>
+          </div>
+        </div><div class="wish-item">
+          <div class="wish-item-top">
+            <span>🕯️ 護法使者 </span>
+            <span>王羲之</span>
+          </div>
+          <div class="wish-item-text" style="font-family:var(--font-xingshu-ltx)">風調雨順國泰民安</div>
+          <div class="wish-item-actions">
+            <span>點擊文字賞析墨寶 🖌️</span>
+            <button class="bless-btn">🙏 隨喜讚歎 (2)</button>
+          </div>
+        </div></div>
+  </aside>
+
+  <div class="toast-banner show" id="toastBanner">已複製房號「public_hall」！您也可點擊「下載獨立分享網頁」直接傳檔案給親友</div>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+    import { getAuth, signInAnonymously, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+    import {
+      getFirestore,
+      doc,
+      getDoc,
+      setDoc,
+      updateDoc,
+      addDoc,
+      onSnapshot,
+      collection,
+      increment
+    } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+    /* =========================================================
+       1. Firebase 初始化與離線容錯雙模架構
+       ========================================================= */
+    const appId = typeof __app_id !== 'undefined' ? __app_id : 'cyber-incense-temple';
+    let firebaseConfig = null;
+    try {
+      if (typeof __firebase_config !== 'undefined' && __firebase_config) {
+        firebaseConfig = typeof __firebase_config === 'string' ? JSON.parse(__firebase_config) : __firebase_config;
+      }
+    } catch (e) {
+      firebaseConfig = null;
+    }
+
+    let db = null;
+    let auth = null;
+    let currentUser = null;
+    let isCloudConnected = false;
+    let currentRoomId = 'public_hall';
+    let unsubRoomDoc = null;
+    let unsubSticksCol = null;
+    let unsubPresenceCol = null;
+    let presenceHeartbeatTimer = null;
+
+    const ROOM_NAMES = {
+      public_hall: '大雄寶殿(公開)',
+      exam_hall: '文昌金榜殿',
+      wealth_hall: '五路財神殿',
+      love_hall: '月老良緣殿'
+    };
+
+    const DEFAULT_TITLES = ['清風居士', '雲水行者', '明月善信', '松風道友', '竹林雅士', '蓮華居士', '星河旅人', '聽雨書生'];
+    const savedNick = DEFAULT_TITLES[Math.floor(Math.random() * DEFAULT_TITLES.length)] + '#' + Math.floor(100 + Math.random() * 899);
+    document.getElementById('nicknameInput').value = savedNick;
+
+    function getMyNickname() {
+      return document.getElementById('nicknameInput').value.trim() || savedNick;
+    }
+
+    function showToast(msg) {
+      const el = document.getElementById('toastBanner');
+      el.textContent = msg;
+      el.classList.add('show');
+      setTimeout(() => el.classList.remove('show'), 3200);
+    }
+
+    function updateTicker(msg) {
+      document.getElementById('liveTicker').textContent = msg;
+    }
+
+    function setConnectionStatus(online) {
+      isCloudConnected = online;
+      const dot = document.getElementById('onlineDot');
+      if (online) {
+        dot.classList.remove('offline');
+      } else {
+        dot.classList.add('offline');
+      }
+    }
+
+    /* =========================================================
+       2. 香爐階級配置與預設初香保證（徹底修復香不見了的 Bug）
+       ========================================================= */
+    const BURNER_TIERS = [
+      { level: 1, name: 'Lv.1 粗陶小爐', maxSticks: 3, targetTreasury: 150, scale: 0.88, incomePerStick: 2 },
+      { level: 2, name: 'Lv.2 黃銅雙耳爐', maxSticks: 6, targetTreasury: 450, scale: 1.0, incomePerStick: 4 },
+      { level: 3, name: 'Lv.3 宣德鎏金鼎', maxSticks: 10, targetTreasury: 1000, scale: 1.12, incomePerStick: 7 },
+      { level: 4, name: 'Lv.4 紫氣八寶巨鼎', maxSticks: 15, targetTreasury: 2200, scale: 1.24, incomePerStick: 12 },
+      { level: 5, name: 'Lv.5 九龍鎮殿天尊鼎', maxSticks: 24, targetTreasury: 999999, scale: 1.36, incomePerStick: 20 }
+    ];
+
+    // 預設初香：確保任何時候爐中至少有一柱長明清香，絕不為空
+    function createDefaultInitialStick() {
+      return {
+        id: 'initial_blessing_stick',
+        uid: 'temple_guardian',
+        nickname: '護法使者',
+        wish: '風調雨順國泰民安',
+        tieKey: 'lanting',
+        blessings: 1,
+        createdAt: Date.now(),
+        xOffset: 0,
+        angle: 0
+      };
+    }
+
+    let personalCoins = 60;
+    let sharedTierIdx = 0;
+    let sharedTreasury = 0;
+    let sharedSticks = [createDefaultInitialStick()];
+    let allRoomSticksCache = [...sharedSticks];
+    let onlineDevoteesCount = 1;
+
+    let comboCount = 0;
+    let lastActionTime = 0;
+    let floatingTexts = [];
+
+    function getCurrentTier() {
+      return BURNER_TIERS[Math.min(sharedTierIdx, BURNER_TIERS.length - 1)];
+    }
+
+    function updateHudUI() {
+      const tier = getCurrentTier();
+      document.getElementById('personalCoins').textContent = personalCoins;
+      document.getElementById('capacityBadge').textContent = `🔥 共用香位：${sharedSticks.length} / ${tier.maxSticks} 柱`;
+      document.getElementById('burnerTierBadge').textContent = tier.name;
+      document.getElementById('onlineCount').textContent = onlineDevoteesCount;
+
+      const isMax = sharedTierIdx >= BURNER_TIERS.length - 1;
+      document.getElementById('treasuryMiniText').textContent = isMax ? '已臻至極' : `${sharedTreasury}/${tier.targetTreasury}`;
+
+      document.getElementById('cfCurrentTierName').textContent = `當前：${tier.name} (上限 ${tier.maxSticks} 柱)`;
+      document.getElementById('cfPersonalCoins').textContent = personalCoins;
+      document.getElementById('cfTreasuryAmount').textContent = sharedTreasury;
+
+      if (isMax) {
+        document.getElementById('cfNextTierName').textContent = '已達最高傳說階級！';
+        document.getElementById('cfTreasuryTarget').textContent = 'MAX';
+        document.getElementById('cfProgressBar').style.width = '100%';
+      } else {
+        const nextTier = BURNER_TIERS[sharedTierIdx + 1];
+        document.getElementById('cfNextTierName').textContent = `下一階：${nextTier.name} (上限 ${nextTier.maxSticks} 柱)`;
+        document.getElementById('cfTreasuryTarget').textContent = tier.targetTreasury;
+        const pct = Math.min(100, Math.round((sharedTreasury / tier.targetTreasury) * 100));
+        document.getElementById('cfProgressBar').style.width = `${pct}%`;
+      }
+    }
+
+    function addPersonalCoins(amount, x = 410, y = 250, customLabel = null, useCombo = true) {
+      let finalAmount = amount;
+      if (useCombo) {
+        const now = Date.now();
+        comboCount = (now - lastActionTime < 2800) ? comboCount + 1 : 1;
+        lastActionTime = now;
+        const mult = comboCount >= 5 ? 2 : (comboCount >= 3 ? 1.5 : 1);
+        finalAmount = Math.round(amount * mult);
+
+        const comboBadge = document.getElementById('comboBadge');
+        if (comboCount >= 2) {
+          comboBadge.style.display = 'inline-block';
+          comboBadge.textContent = `連擊 x${comboCount}`;
+        } else {
+          comboBadge.style.display = 'none';
+        }
+      }
+
+      personalCoins += finalAmount;
+      updateHudUI();
+
+      floatingTexts.push({
+        text: customLabel || `+${finalAmount} 個人香火錢`,
+        x: x + (Math.random() - 0.5) * 30,
+        y: y,
+        vy: -1.3,
+        alpha: 1.0,
+        scale: finalAmount > amount ? 1.25 : 1.0
+      });
+    }
+
+    /* =========================================================
+       3. Firestore 即時房間同步機制（附完整單機容錯與安全寫入）
+       ========================================================= */
+    async function joinTempleRoom(roomId) {
+      const cleanRoom = (roomId || '').trim().replace(/[^a-zA-Z0-9_\-\u4e00-\u9fa5]/g, '') || 'public_hall';
+      currentRoomId = cleanRoom;
+
+      const label = ROOM_NAMES[cleanRoom] || `私密共修房【${cleanRoom}】`;
+      document.getElementById('currentRoomLabel').textContent = label;
+
+      // 同步更新網址列參數（不重整頁面）以便直接複製網址分享
+      try {
+        const url = new URL(window.location.href);
+        url.searchParams.set('room', cleanRoom);
+        window.history.replaceState({}, '', url.toString());
+      } catch (e) {}
+
+      if (unsubRoomDoc) { unsubRoomDoc(); unsubRoomDoc = null; }
+      if (unsubSticksCol) { unsubSticksCol(); unsubSticksCol = null; }
+      if (unsubPresenceCol) { unsubPresenceCol(); unsubPresenceCol = null; }
+      if (presenceHeartbeatTimer) { clearInterval(presenceHeartbeatTimer); presenceHeartbeatTimer = null; }
+
+      // 若無 Firebase 連線，無縫切換為本地單機房號狀態並保留預設香柱
+      if (!db || !currentUser) {
+        setConnectionStatus(false);
+        if (sharedSticks.length === 0) {
+          sharedSticks = [createDefaultInitialStick()];
+        }
+        recalculateStickSlots();
+        renderSharedWishBoard(allRoomSticksCache);
+        updateHudUI();
+        updateTicker(`🕯️ 已進入【${label}】（單機共修模式・香火不滅）`);
+        return;
+      }
+
+      const roomDocRef = doc(db, 'artifacts', appId, 'public', 'data', `temple_rooms_${cleanRoom}`, 'state');
+      const sticksColRef = collection(db, 'artifacts', appId, 'public', 'data', `temple_sticks_${cleanRoom}`);
+      const presenceColRef = collection(db, 'artifacts', appId, 'public', 'data', `temple_presence_${cleanRoom}`);
+
+      try {
+        const snap = await getDoc(roomDocRef);
+        if (!snap.exists()) {
+          await setDoc(roomDocRef, {
+            tierIdx: 0,
+            treasury: 0,
+            lastEvent: `🙏 ${getMyNickname()} 開啟了「${label}」共修香火`,
+            updatedAt: Date.now()
+          });
+          // 為新建的房間種下第一柱護法初香
+          await addDoc(sticksColRef, {
+            uid: 'temple_guardian',
+            nickname: '護法使者',
+            wish: '風調雨順國泰民安',
+            tieKey: 'lanting',
+            blessings: 1,
+            createdAt: Date.now()
+          });
+        } else {
+          await updateDoc(roomDocRef, {
+            lastEvent: `🙏 善信「${getMyNickname()}」步入殿堂共修`,
+            updatedAt: Date.now()
+          });
+        }
+        setConnectionStatus(true);
+      } catch (err) {
+        console.warn('Room init fallback to local:', err);
+        setConnectionStatus(false);
+      }
+
+      // 1) 即時監聽房間狀態
+      unsubRoomDoc = onSnapshot(roomDocRef, (snapshot) => {
+        setConnectionStatus(true);
+        if (!snapshot.exists()) return;
+        const data = snapshot.data();
+        const prevTier = sharedTierIdx;
+        sharedTierIdx = data.tierIdx || 0;
+        sharedTreasury = data.treasury || 0;
+
+        if (sharedTierIdx > prevTier) {
+          burnerHitScale = 1.18;
+          audio.playUpgrade();
+          floatingTexts.push({
+            text: `✨ 全殿共修升級為【${getCurrentTier().name}】！`,
+            x: 410,
+            y: 190,
+            vy: -0.9,
+            alpha: 1.0,
+            scale: 1.3
+          });
+        }
+
+        if (data.lastEvent) {
+          updateTicker(data.lastEvent);
+        }
+        recalculateStickSlots();
+        updateHudUI();
+      }, (err) => {
+        console.warn('Room snapshot error:', err);
+        setConnectionStatus(false);
+      });
+
+      // 2) 即時監聽共用香爐香柱（保證至少有一柱香顯示，絕不清空）
+      unsubSticksCol = onSnapshot(sticksColRef, (querySnapshot) => {
+        const list = [];
+        querySnapshot.forEach((docSnap) => {
+          list.push({ id: docSnap.id, ...docSnap.data() });
+        });
+        list.sort((a, b) => (a.createdAt || 0) - (b.createdAt || 0));
+
+        if (list.length === 0) {
+          const fallback = createDefaultInitialStick();
+          sharedSticks = [fallback];
+          allRoomSticksCache = [fallback];
+        } else {
+          allRoomSticksCache = list;
+          const maxCap = getCurrentTier().maxSticks;
+          sharedSticks = list.slice(-maxCap);
+        }
+        recalculateStickSlots();
+        updateHudUI();
+        renderSharedWishBoard(allRoomSticksCache);
+      }, (err) => {
+        console.warn('Sticks snapshot error:', err);
+      });
+
+      // 3) 在線同修心跳機制
+      const sendHeartbeat = async () => {
+        if (!currentUser || !db) return;
+        try {
+          const myPresenceRef = doc(db, 'artifacts', appId, 'public', 'data', `temple_presence_${cleanRoom}`, currentUser.uid);
+          await setDoc(myPresenceRef, {
+            uid: currentUser.uid,
+            nickname: getMyNickname(),
+            lastSeen: Date.now()
+          });
+        } catch (e) {}
+      };
+      sendHeartbeat();
+      presenceHeartbeatTimer = setInterval(sendHeartbeat, 15000);
+
+      unsubPresenceCol = onSnapshot(presenceColRef, (snap) => {
+        const now = Date.now();
+        let activeCount = 0;
+        snap.forEach((d) => {
+          const p = d.data();
+          if (now - (p.lastSeen || 0) < 45000) {
+            activeCount++;
+          }
+        });
+        onlineDevoteesCount = Math.max(1, activeCount);
+        updateHudUI();
+      }, (err) => console.warn('Presence error:', err));
+    }
+
+    // 發布一柱清香至共用香爐（先即時本地渲染再同步雲端，零延遲且絕不丟失）
+    async function lightSharedIncense(wishText, tieKey) {
+      const nick = getMyNickname();
+      const newStick = {
+        id: 'local_' + Date.now(),
+        uid: currentUser ? currentUser.uid : 'local_user',
+        nickname: nick,
+        wish: wishText,
+        tieKey: tieKey,
+        blessings: 0,
+        createdAt: Date.now()
+      };
+
+      // 立即更新本地畫面，確保香柱立刻出現在香爐上
+      allRoomSticksCache.push(newStick);
+      const maxCap = getCurrentTier().maxSticks;
+      sharedSticks = allRoomSticksCache.slice(-maxCap);
+      recalculateStickSlots();
+      updateHudUI();
+      renderSharedWishBoard(allRoomSticksCache);
+      updateTicker(`🔥 善信「${nick}」敬獻清香祈願：【${wishText}】`);
+
+      if (!db || !currentUser) return;
+
+      const sticksColRef = collection(db, 'artifacts', appId, 'public', 'data', `temple_sticks_${currentRoomId}`);
+      const roomDocRef = doc(db, 'artifacts', appId, 'public', 'data', `temple_rooms_${currentRoomId}`, 'state');
+
+      try {
+        await addDoc(sticksColRef, {
+          uid: currentUser.uid,
+          nickname: nick,
+          wish: wishText,
+          tieKey: tieKey,
+          blessings: 0,
+          createdAt: Date.now()
+        });
+        await setDoc(roomDocRef, {
+          lastEvent: `🔥 善信「${nick}」敬獻清香祈願：【${wishText}】`,
+          updatedAt: Date.now()
+        }, { merge: true });
+      } catch (err) {
+        console.warn('Cloud sync stick warning:', err);
+      }
+    }
+
+    // 眾籌捐獻香火錢升級共用寶鼎
+    async function donateToSharedBurner(amount) {
+      if (personalCoins < amount) {
+        showToast('個人香火錢不足，可點擊香爐敲鐘或敲木魚賺取！');
+        return;
+      }
+      if (sharedTierIdx >= BURNER_TIERS.length - 1) {
+        showToast('本殿寶鼎已達最高階級！');
+        return;
+      }
+
+      personalCoins -= amount;
+      audio.playWoodblock(740);
+      const nick = getMyNickname();
+
+      // 本地即時計算回饋
+      let nextTierIdx = sharedTierIdx;
+      let nextTreasury = sharedTreasury + amount;
+      let eventMsg = `💰 善信「${nick}」為大殿捐獻了 ${amount} 香火錢！`;
+
+      while (nextTierIdx < BURNER_TIERS.length - 1 && nextTreasury >= BURNER_TIERS[nextTierIdx].targetTreasury) {
+        nextTreasury -= BURNER_TIERS[nextTierIdx].targetTreasury;
+        nextTierIdx++;
+        eventMsg = `🎉 功德圓滿！在「${nick}」的捐助下，全殿香爐晉升為【${BURNER_TIERS[nextTierIdx].name}】！`;
+      }
+
+      if (!db || !currentUser) {
+        if (nextTierIdx > sharedTierIdx) {
+          burnerHitScale = 1.18;
+          audio.playUpgrade();
+        }
+        sharedTierIdx = nextTierIdx;
+        sharedTreasury = nextTreasury;
+        const maxCap = getCurrentTier().maxSticks;
+        sharedSticks = allRoomSticksCache.slice(-maxCap);
+        recalculateStickSlots();
+        updateHudUI();
+        updateTicker(eventMsg);
+        return;
+      }
+
+      updateHudUI();
+      const roomDocRef = doc(db, 'artifacts', appId, 'public', 'data', `temple_rooms_${currentRoomId}`, 'state');
+
+      try {
+        const snap = await getDoc(roomDocRef);
+        const data = snap.exists() ? snap.data() : { tierIdx: 0, treasury: 0 };
+        let cloudTierIdx = data.tierIdx || 0;
+        let cloudTreasury = (data.treasury || 0) + amount;
+        let cloudMsg = `💰 善信「${nick}」為大殿捐獻了 ${amount} 香火錢！`;
+
+        while (cloudTierIdx < BURNER_TIERS.length - 1 && cloudTreasury >= BURNER_TIERS[cloudTierIdx].targetTreasury) {
+          cloudTreasury -= BURNER_TIERS[cloudTierIdx].targetTreasury;
+          cloudTierIdx++;
+          cloudMsg = `🎉 功德圓滿！在「${nick}」的捐助下，全殿香爐晉升為【${BURNER_TIERS[cloudTierIdx].name}】！`;
+        }
+
+        await setDoc(roomDocRef, {
+          tierIdx: cloudTierIdx,
+          treasury: cloudTreasury,
+          lastEvent: cloudMsg,
+          updatedAt: Date.now()
+        }, { merge: true });
+      } catch (err) {
+        console.warn('Donate error:', err);
+      }
+    }
+
+    // 隨喜讚歎其他玩家的祈福香柱
+    async function sendBlessingToStick(stickItem) {
+      const nick = getMyNickname();
+      stickItem.blessings = (stickItem.blessings || 0) + 1;
+      renderSharedWishBoard(allRoomSticksCache);
+      addPersonalCoins(5, 410, 230, '隨喜讚歎 +5錢');
+      audio.playChime();
+      updateTicker(`🙏 「${nick}」隨喜讚歎了「${stickItem.nickname}」的祈願【${stickItem.wish}】`);
+
+      if (!db || !currentUser || !stickItem.id || stickItem.id.startsWith('local_') || stickItem.id === 'initial_blessing_stick') {
+        return;
+      }
+
+      const stickDocRef = doc(db, 'artifacts', appId, 'public', 'data', `temple_sticks_${currentRoomId}`, stickItem.id);
+      const roomDocRef = doc(db, 'artifacts', appId, 'public', 'data', `temple_rooms_${currentRoomId}`, 'state');
+
+      try {
+        await updateDoc(stickDocRef, {
+          blessings: increment(1)
+        });
+        await setDoc(roomDocRef, {
+          lastEvent: `🙏 「${nick}」隨喜讚歎了「${stickItem.nickname}」的祈願【${stickItem.wish}】`,
+          updatedAt: Date.now()
+        }, { merge: true });
+      } catch (err) {
+        console.warn('Blessing error:', err);
+      }
+    }
+
+    async function broadcastTempleAction(msg) {
+      updateTicker(msg);
+      if (!db || !currentUser) return;
+      try {
+        const roomDocRef = doc(db, 'artifacts', appId, 'public', 'data', `temple_rooms_${currentRoomId}`, 'state');
+        await setDoc(roomDocRef, {
+          lastEvent: msg,
+          updatedAt: Date.now()
+        }, { merge: true });
+      } catch (e) {}
+    }
+
+    /* =========================================================
+       4. 祈福詞庫、行書帖配置與 Web Audio 音效
+       ========================================================= */
+    const WISH_PRESETS = {
+      all: ['心想事成萬事勝意', '風調雨順國泰民安', '紫氣東來福壽雙全', '吉星高照諸事順遂'],
+      study: ['金榜題名獨占鰲頭', '學業精進文思泉湧', '逢考必過前程似錦', '蟾宮折桂夢想成真'],
+      career: ['鴻圖大展步步高升', '事業騰飛貴人相助', '乘風破浪再創輝煌', '百尺竿頭更進一步'],
+      health: ['身體健康平安喜樂', '闔家安康福壽綿長', '消災解厄百病不侵', '歲歲平安吉祥如意'],
+      wealth: ['財源廣進日進斗金', '招財進寶富貴盈門', '八方來財順風順水', '和氣生財滿載而歸'],
+      love: ['百年好合永結同心', '良緣天定花好月圓', '千里姻緣一線牽成', '琴瑟和鳴幸福美滿']
+    };
+
+    const FORTUNES = [
+      { rank: '上上大吉', poem: '雲開見月明，萬里好前程。\n誠心香一柱，福澤自然生。', desc: '所求之事正值運勢上升之際，貴人相助，順遂無礙。' },
+      { rank: '上吉籤', poem: '春風吹柳綠，時雨潤花紅。\n靜守待時至，功成名自通。', desc: '耕耘終有收穫，保持耐心與專注，好消息即將到來。' },
+      { rank: '中上籤', poem: '行舟遇順水，帆影入雲端。\n莫問前路遠，心安即是安。', desc: '心境平和則萬事皆順，適合穩步推進計畫，切忌急躁。' },
+      { rank: '大吉籤', poem: '紫氣東來滿，祥光照玉堂。\n善念結善果，百福自臻祥。', desc: '善念與努力已累積深厚福報，近期將有意外之喜。' }
+    ];
+
+    const TIE_CONFIGS = {
+      lanting: { name: '王羲之《蘭亭序》筆意', fontFamily: "var(--font-xingshu-ltx)", scaleVariance: 0.14, rotateVariance: 4.5, shiftVariance: 4.5, baseSkew: -2.5 },
+      huang: { name: '黃庭堅《松風閣》筆意', fontFamily: "var(--font-xingshu-huang)", scaleVariance: 0.18, rotateVariance: 6.0, shiftVariance: 6.0, baseSkew: -3.5 },
+      shu: { name: '米芾《蜀素帖》筆意', fontFamily: "var(--font-xingshu-shu)", scaleVariance: 0.16, rotateVariance: 5.5, shiftVariance: 5.5, baseSkew: -3.0 },
+      yan: { name: '顏真卿《祭姪稿》筆意', fontFamily: "var(--font-xingshu-yan)", scaleVariance: 0.12, rotateVariance: 3.5, shiftVariance: 3.5, baseSkew: -1.5 }
+    };
+
+    class ZenAudioEngine {
+      constructor() {
+        this.ctx = null;
+        this.enabled = false;
+        this.bgmOsc = null;
+        this.bgmGain = null;
+      }
+      init() {
+        if (!this.ctx) {
+          const AudioCtx = window.AudioContext || window.webkitAudioContext;
+          this.ctx = new AudioCtx();
+        }
+        if (this.ctx.state === 'suspended') this.ctx.resume();
+      }
+      toggle() {
+        this.enabled = !this.enabled;
+        if (this.enabled) {
+          this.init();
+          this.playBowl(528, 1.8, 0.15);
+          this.startAmbient();
+        } else {
+          this.stopAmbient();
+        }
+        return this.enabled;
+      }
+      startAmbient() {
+        if (!this.ctx || this.bgmOsc) return;
+        const now = this.ctx.currentTime;
+        this.bgmOsc = this.ctx.createOscillator();
+        this.bgmGain = this.ctx.createGain();
+        this.bgmOsc.type = 'sine';
+        this.bgmOsc.frequency.setValueAtTime(136.1, now);
+        this.bgmGain.gain.setValueAtTime(0.001, now);
+        this.bgmGain.gain.exponentialRampToValueAtTime(0.03, now + 2);
+        this.bgmOsc.connect(this.bgmGain);
+        this.bgmGain.connect(this.ctx.destination);
+        this.bgmOsc.start();
+      }
+      stopAmbient() {
+        if (this.bgmOsc) {
+          try { this.bgmOsc.stop(); this.bgmOsc.disconnect(); } catch (e) {}
+          this.bgmOsc = null;
+        }
+      }
+      playBowl(freq = 432, duration = 2.2, volume = 0.22) {
+        if (!this.enabled) return;
+        this.init();
+        const now = this.ctx.currentTime;
+        const osc1 = this.ctx.createOscillator();
+        const osc2 = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+        osc1.type = 'sine';
+        osc1.frequency.setValueAtTime(freq, now);
+        osc2.type = 'sine';
+        osc2.frequency.setValueAtTime(freq * 2.003, now);
+        gain.gain.setValueAtTime(0.001, now);
+        gain.gain.linearRampToValueAtTime(volume, now + 0.03);
+        gain.gain.exponentialRampToValueAtTime(0.0008, now + duration);
+        osc1.connect(gain);
+        osc2.connect(gain);
+        gain.connect(this.ctx.destination);
+        osc1.start(now);
+        osc2.start(now);
+        osc1.stop(now + duration);
+        osc2.stop(now + duration);
+      }
+      playWoodblock(pitch = 680) {
+        if (!this.enabled) return;
+        this.init();
+        const now = this.ctx.currentTime;
+        const osc = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+        osc.type = 'triangle';
+        osc.frequency.setValueAtTime(pitch, now);
+        osc.frequency.exponentialRampToValueAtTime(pitch * 0.42, now + 0.09);
+        gain.gain.setValueAtTime(0.32, now);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.14);
+        osc.connect(gain);
+        gain.connect(this.ctx.destination);
+        osc.start(now);
+        osc.stop(now + 0.15);
+      }
+      playUpgrade() {
+        this.playBowl(528, 1.5, 0.22);
+        setTimeout(() => this.playBowl(660, 1.8, 0.22), 140);
+        setTimeout(() => this.playBowl(792, 2.2, 0.25), 280);
+      }
+      playChime() { this.playBowl(880, 1.1, 0.16); }
+      playStamp() {
+        if (!this.enabled) return;
+        this.init();
+        const now = this.ctx.currentTime;
+        const osc = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(140, now);
+        osc.frequency.exponentialRampToValueAtTime(48, now + 0.12);
+        gain.gain.setValueAtTime(0.35, now);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.15);
+        osc.connect(gain);
+        gain.connect(this.ctx.destination);
+        osc.start(now);
+        osc.stop(now + 0.16);
+      }
+    }
+
+    const audio = new ZenAudioEngine();
+
+    /* =========================================================
+       5. Canvas 2D 共用香爐繪製（徹底修復香柱座標、Z軸層級與長度溢出問題）
+       ========================================================= */
+    const canvas = document.getElementById('incenseCanvas');
+    const ctx = canvas.getContext('2d');
+
+    let burnerStyle = 'bronze';
+    let bowTiltAngle = 0;
+    let burnerHitScale = 1.0;
+    let pointerWind = { x: 0, y: 0 };
+    let smokeParticles = [];
+    let spiritOrbs = [];
+    let renderedStickHitboxes = []; // 記錄每柱香的螢幕熱區，支援滑鼠懸停顯示施主名牌
+    const ORB_LABELS = ['福', '祿', '壽', '喜', '慧', '安', '財'];
+
+    function recalculateStickSlots() {
+      const n = sharedSticks.length;
+      if (n === 0) return;
+      const maxSpread = Math.min(82, 22 + n * 4.2);
+      sharedSticks.forEach((stick, i) => {
+        if (n === 1) {
+          stick.xOffset = 0;
+          stick.angle = 0;
+        } else {
+          const ratio = (i / (n - 1)) * 2 - 1;
+          stick.xOffset = ratio * maxSpread;
+          stick.angle = ratio * 0.16;
+        }
+      });
+    }
+
+    // 每 2.5 秒依據共用香爐上的總香柱數為玩家帶來香火收益
+    setInterval(() => {
+      const activeSticks = Math.max(1, sharedSticks.length);
+      const tier = getCurrentTier();
+      const passiveIncome = activeSticks * tier.incomePerStick;
+      addPersonalCoins(passiveIncome, canvas.width / 2, 265, `🔥 共修香火 +${passiveIncome}`, false);
+    }, 2500);
+
+    class SpiritOrb {
+      constructor() {
+        this.x = 150 + Math.random() * (canvas.width - 300);
+        this.y = 260 + Math.random() * 40;
+        this.vx = (Math.random() - 0.5) * 0.8;
+        this.vy = -0.55 - Math.random() * 0.45;
+        this.radius = 20;
+        this.label = ORB_LABELS[Math.floor(Math.random() * ORB_LABELS.length)];
+        this.phase = Math.random() * Math.PI * 2;
+        this.alpha = 0;
+      }
+      update() {
+        this.phase += 0.05;
+        this.x += this.vx + Math.sin(this.phase) * 0.6;
+        this.y += this.vy;
+        if (this.alpha < 1 && this.y > 60) this.alpha = Math.min(1, this.alpha + 0.03);
+        if (this.y < 55) this.alpha -= 0.03;
+      }
+      draw(ctx) {
+        if (this.alpha <= 0) return;
+        ctx.save();
+        ctx.globalAlpha = Math.max(0, this.alpha);
+        const pulse = 1 + Math.sin(this.phase * 1.5) * 0.12;
+        const grad = ctx.createRadialGradient(this.x, this.y, 2, this.x, this.y, this.radius * 1.6 * pulse);
+        grad.addColorStop(0, 'rgba(255, 246, 200, 0.95)');
+        grad.addColorStop(0.5, 'rgba(212, 175, 55, 0.55)');
+        grad.addColorStop(1, 'rgba(212, 175, 55, 0)');
+        ctx.fillStyle = grad;
+        ctx.beginPath();
+        ctx.arc(this.x, this.y, this.radius * 1.6 * pulse, 0, Math.PI * 2);
+        ctx.fill();
+
+        ctx.strokeStyle = '#f5e6b3';
+        ctx.lineWidth = 1.5;
+        ctx.beginPath();
+        ctx.arc(this.x, this.y, this.radius * 0.85, 0, Math.PI * 2);
+        ctx.stroke();
+
+        ctx.fillStyle = '#2b1808';
+        ctx.font = 'bold 17px "Noto Serif TC", serif';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText(this.label, this.x, this.y + 1);
+        ctx.restore();
+      }
+    }
+
+    setInterval(() => {
+      if (spiritOrbs.length < 3 && Math.random() < 0.72) {
+        spiritOrbs.push(new SpiritOrb());
+      }
+    }, 2600);
+
+    class SmokeParticle {
+      constructor(x, y, windX) {
+        this.x = x + (Math.random() - 0.5) * 3;
+        this.y = y;
+        this.vx = (Math.random() - 0.5) * 0.25 + windX * 0.35;
+        this.vy = -0.65 - Math.random() * 0.45;
+        this.size = 2.5 + Math.random() * 2;
+        this.alpha = 0.42 + Math.random() * 0.14;
+        this.life = 0;
+        this.maxLife = 220 + Math.random() * 110;
+        this.phase = Math.random() * Math.PI * 2;
+        this.freq = 0.025 + Math.random() * 0.015;
+      }
+      update(windX) {
+        this.life++;
+        const curl = Math.sin(this.life * this.freq + this.phase) * 0.42;
+        this.x += this.vx + curl + windX * 0.65;
+        this.y += this.vy;
+        this.size += 0.11;
+        this.alpha *= 0.991;
+      }
+      draw(ctx) {
+        if (this.alpha <= 0.005) return;
+        const grad = ctx.createRadialGradient(this.x, this.y, 0, this.x, this.y, this.size);
+        grad.addColorStop(0, `rgba(235, 232, 226, ${this.alpha})`);
+        grad.addColorStop(0.55, `rgba(205, 200, 192, ${this.alpha * 0.45})`);
+        grad.addColorStop(1, 'rgba(205, 200, 192, 0)');
+        ctx.fillStyle = grad;
+        ctx.beginPath();
+        ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+        ctx.fill();
+      }
+    }
+
+    function drawBurner(cx, cy) {
+      const tier = getCurrentTier();
+      const tierScale = tier.scale;
+      renderedStickHitboxes = [];
+
+      ctx.save();
+      ctx.translate(cx, cy);
+      ctx.scale(burnerHitScale * tierScale, (2 - burnerHitScale) * tierScale);
+      ctx.rotate(bowTiltAngle);
+
+      const isBronze = burnerStyle === 'bronze';
+      const bodyGrad = ctx.createLinearGradient(-115, -40, 115, 65);
+      if (isBronze) {
+        bodyGrad.addColorStop(0, '#4a3520');
+        bodyGrad.addColorStop(0.3, '#8c6638');
+        bodyGrad.addColorStop(0.5, '#b88b4a');
+        bodyGrad.addColorStop(0.75, '#6e4e28');
+        bodyGrad.addColorStop(1, '#332212');
+      } else {
+        bodyGrad.addColorStop(0, '#1e4238');
+        bodyGrad.addColorStop(0.35, '#468270');
+        bodyGrad.addColorStop(0.55, '#74b39e');
+        bodyGrad.addColorStop(0.8, '#2f5e50');
+        bodyGrad.addColorStop(1, '#152e27');
+      }
+
+      if (tier.level >= 3) {
+        ctx.save();
+        ctx.strokeStyle = `rgba(212, 175, 55, ${0.18 + tier.level * 0.05})`;
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.ellipse(0, 15, 132, 74, 0, 0, Math.PI * 2);
+        ctx.stroke();
+        ctx.restore();
+      }
+
+      // 1. 三足鼎腳
+      ctx.fillStyle = isBronze ? '#382615' : '#18362d';
+      ctx.beginPath();
+      ctx.moveTo(-75, 45);
+      ctx.lineTo(-86, 86);
+      ctx.quadraticCurveTo(-78, 92, -68, 85);
+      ctx.lineTo(-52, 50);
+      ctx.fill();
+
+      ctx.beginPath();
+      ctx.moveTo(75, 45);
+      ctx.lineTo(86, 86);
+      ctx.quadraticCurveTo(78, 92, 68, 85);
+      ctx.lineTo(52, 50);
+      ctx.fill();
+
+      ctx.beginPath();
+      ctx.moveTo(-14, 55);
+      ctx.lineTo(-10, 94);
+      ctx.quadraticCurveTo(0, 99, 10, 94);
+      ctx.lineTo(14, 55);
+      ctx.fill();
+
+      // 2. 雙耳
+      ctx.strokeStyle = isBronze ? '#9c733e' : '#589985';
+      ctx.lineWidth = 10;
+      ctx.lineCap = 'round';
+      ctx.beginPath();
+      ctx.arc(-106, -4, 22, Math.PI * 0.45, Math.PI * 1.55);
+      ctx.stroke();
+      ctx.beginPath();
+      ctx.arc(106, -4, 22, -Math.PI * 0.55, Math.PI * 0.55);
+      ctx.stroke();
+
+      // 3. 爐身主體
+      ctx.fillStyle = bodyGrad;
+      ctx.beginPath();
+      ctx.moveTo(-98, -32);
+      ctx.bezierCurveTo(-116, 15, -92, 60, 0, 62);
+      ctx.bezierCurveTo(92, 60, 116, 15, 98, -32);
+      ctx.closePath();
+      ctx.fill();
+
+      // 4. 弦紋裝飾
+      ctx.strokeStyle = isBronze ? 'rgba(243, 229, 171, 0.4)' : 'rgba(210, 245, 232, 0.4)';
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.moveTo(-98, -10);
+      ctx.quadraticCurveTo(0, 2, 98, -10);
+      ctx.stroke();
+      ctx.beginPath();
+      ctx.moveTo(-94, 16);
+      ctx.quadraticCurveTo(0, 28, 94, 16);
+      ctx.stroke();
+
+      // 5. 爐口邊沿
+      ctx.fillStyle = isBronze ? '#a67c44' : '#65a692';
+      ctx.beginPath();
+      ctx.ellipse(0, -32, 98, 17, 0, 0, Math.PI * 2);
+      ctx.fill();
+
+      // 6. 香灰面
+      const ashGrad = ctx.createRadialGradient(0, -32, 8, 0, -32, 88);
+      ashGrad.addColorStop(0, '#9c958c');
+      ashGrad.addColorStop(0.7, '#6e685f');
+      ashGrad.addColorStop(1, '#47433d');
+      ctx.fillStyle = ashGrad;
+      ctx.beginPath();
+      ctx.ellipse(0, -32, 88, 13, 0, 0, Math.PI * 2);
+      ctx.fill();
+
+      // 7. 繪製所有線上同修插在共用香爐上的香柱（確保在香灰層之上，且長度永不為負）
+      const sticksToDraw = sharedSticks.length > 0 ? sharedSticks : [createDefaultInitialStick()];
+
+      sticksToDraw.forEach((stick) => {
+        const created = Number(stick.createdAt) || Date.now();
+        const ageSec = Math.max(0, (Date.now() - created) / 1000);
+        // 循環燃燒進度（每 20 分鐘為一輪長明香，保證香柱始終清晰可見）
+        const cycleRatio = (ageSec % 1200) / 1200;
+        const totalLen = 146;
+        const currentLen = Math.max(58, totalLen * (1 - cycleRatio * 0.55));
+        const isMine = currentUser && stick.uid === currentUser.uid;
+        const xOff = Number(stick.xOffset) || 0;
+        const ang = Number(stick.angle) || 0;
+
+        ctx.save();
+        ctx.translate(xOff, -30);
+        ctx.rotate(ang);
+
+        // 紅色香腳（插入香灰處）
+        ctx.strokeStyle = '#b82924';
+        ctx.lineWidth = 3.0;
+        ctx.lineCap = 'round';
+        ctx.beginPath();
+        ctx.moveTo(0, 2);
+        ctx.lineTo(0, -24);
+        ctx.stroke();
+
+        // 香身（自己的香為亮金香，他人為溫潤檀香）
+        ctx.strokeStyle = isMine ? '#ffe89e' : (tier.level >= 4 ? '#f0c869' : '#d6aa63');
+        ctx.lineWidth = isMine ? 3.8 : 3.3;
+        ctx.beginPath();
+        ctx.moveTo(0, -24);
+        ctx.lineTo(0, -currentLen);
+        ctx.stroke();
+
+        // 頂端白香灰
+        const tipY = -currentLen;
+        ctx.strokeStyle = '#e5e0d8';
+        ctx.lineWidth = 3.2;
+        ctx.beginPath();
+        ctx.moveTo(0, tipY);
+        ctx.lineTo(0, tipY - 6);
+        ctx.stroke();
+
+        // 燃燒紅火光點與光暈
+        const emberY = tipY - 6;
+        const pulse = 0.78 + Math.sin(Date.now() * 0.012 + xOff) * 0.22;
+        const glow = ctx.createRadialGradient(0, emberY, 0, 0, emberY, 12 * pulse);
+        glow.addColorStop(0, 'rgba(255, 130, 50, 0.98)');
+        glow.addColorStop(0.5, 'rgba(255, 55, 15, 0.48)');
+        glow.addColorStop(1, 'rgba(255, 50, 10, 0)');
+        ctx.fillStyle = glow;
+        ctx.beginPath();
+        ctx.arc(0, emberY, 12 * pulse, 0, Math.PI * 2);
+        ctx.fill();
+
+        ctx.fillStyle = '#ff6d2e';
+        ctx.beginPath();
+        ctx.arc(0, emberY, 2.5, 0, Math.PI * 2);
+        ctx.fill();
+
+        // 計算頂端與中段在畫布上的世界座標（供煙霧生成與滑鼠懸停檢測）
+        const localMidX = xOff - (emberY * 0.5) * Math.sin(ang);
+        const localMidY = -30 + (emberY * 0.5) * Math.cos(ang);
+        const worldMidX = cx + (localMidX * Math.cos(bowTiltAngle) - localMidY * Math.sin(bowTiltAngle)) * tierScale;
+        const worldMidY = cy + (localMidX * Math.sin(bowTiltAngle) + localMidY * Math.cos(bowTiltAngle)) * tierScale;
+
+        renderedStickHitboxes.push({
+          x: worldMidX,
+          y: worldMidY,
+          stick: stick
+        });
+
+        const localTipX = xOff - emberY * Math.sin(ang);
+        const localTipY = -30 + emberY * Math.cos(ang);
+        const worldTipX = cx + (localTipX * Math.cos(bowTiltAngle) - localTipY * Math.sin(bowTiltAngle)) * tierScale;
+        const worldTipY = cy + (localTipX * Math.sin(bowTiltAngle) + localTipY * Math.cos(bowTiltAngle)) * tierScale;
+
+        const spawnRate = Math.max(0.22, 0.52 - sticksToDraw.length * 0.015);
+        if (Math.random() < spawnRate) {
+          smokeParticles.push(new SmokeParticle(worldTipX, worldTipY, pointerWind.x));
+        }
+
+        ctx.restore();
+      });
+
+      ctx.restore();
+    }
+
+    function animate() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+      const tierScale = getCurrentTier().scale;
+      const baseGrad = ctx.createRadialGradient(canvas.width / 2, 425, 20, canvas.width / 2, 425, 220 * tierScale);
+      baseGrad.addColorStop(0, 'rgba(0, 0, 0, 0.75)');
+      baseGrad.addColorStop(1, 'rgba(0, 0, 0, 0)');
+      ctx.fillStyle = baseGrad;
+      ctx.beginPath();
+      ctx.ellipse(canvas.width / 2, 425, 210 * tierScale, 26, 0, 0, Math.PI * 2);
+      ctx.fill();
+
+      for (let i = smokeParticles.length - 1; i >= 0; i--) {
+        const p = smokeParticles[i];
+        p.update(pointerWind.x);
+        p.draw(ctx);
+        if (p.life >= p.maxLife || p.alpha <= 0.005 || p.y < -20) {
+          smokeParticles.splice(i, 1);
+        }
+      }
+
+      drawBurner(canvas.width / 2, 330);
+
+      for (let i = spiritOrbs.length - 1; i >= 0; i--) {
+        const orb = spiritOrbs[i];
+        orb.update();
+        orb.draw(ctx);
+        if (orb.alpha <= 0 && orb.y < 60) {
+          spiritOrbs.splice(i, 1);
+        }
+      }
+
+      for (let i = floatingTexts.length - 1; i >= 0; i--) {
+        const ft = floatingTexts[i];
+        ft.y += ft.vy;
+        ft.alpha -= 0.018;
+        if (ft.alpha <= 0) {
+          floatingTexts.splice(i, 1);
+          continue;
+        }
+        ctx.save();
+        ctx.globalAlpha = ft.alpha;
+        ctx.fillStyle = '#f5e6b3';
+        ctx.font = `bold ${Math.round(19 * ft.scale)}px "Noto Serif TC", serif`;
+        ctx.textAlign = 'center';
+        ctx.shadowColor = 'rgba(0,0,0,0.85)';
+        ctx.shadowBlur = 6;
+        ctx.fillText(ft.text, ft.x, ft.y);
+        ctx.restore();
+      }
+
+      pointerWind.x *= 0.94;
+      bowTiltAngle *= 0.88;
+      burnerHitScale += (1.0 - burnerHitScale) * 0.18;
+
+      requestAnimationFrame(animate);
+    }
+
+    function handleCanvasClick(clientX, clientY) {
+      const rect = canvas.getBoundingClientRect();
+      const scaleX = canvas.width / rect.width;
+      const scaleY = canvas.height / rect.height;
+      const x = (clientX - rect.left) * scaleX;
+      const y = (clientY - rect.top) * scaleY;
+
+      // 1. 捕捉飄浮福光靈珠
+      for (let i = spiritOrbs.length - 1; i >= 0; i--) {
+        const orb = spiritOrbs[i];
+        const dist = Math.hypot(x - orb.x, y - orb.y);
+        if (dist <= orb.radius * 1.8) {
+          spiritOrbs.splice(i, 1);
+          audio.playChime();
+          addPersonalCoins(25, orb.x, orb.y, `接獲「${orb.label}」珠 +25錢!`);
+          for (let k = 0; k < 10; k++) {
+            smokeParticles.push(new SmokeParticle(orb.x, orb.y, (Math.random() - 0.5) * 2));
+          }
+          return;
+        }
+      }
+
+      // 2. 點擊香爐敲鐘得香火錢
+      const distBurner = Math.hypot(x - canvas.width / 2, y - 335);
+      if (distBurner < 130 * getCurrentTier().scale) {
+        burnerHitScale = 1.07;
+        audio.playBowl(528 + (comboCount % 5) * 66, 1.3, 0.18);
+        addPersonalCoins(5, x, y - 20);
+      }
+    }
+
+    canvas.addEventListener('mousedown', (e) => handleCanvasClick(e.clientX, e.clientY));
+    canvas.addEventListener('touchstart', (e) => {
+      if (e.touches && e.touches.length > 0) handleCanvasClick(e.touches[0].clientX, e.touches[0].clientY);
+    }, { passive: true });
+
+    let lastPointerX = null;
+    const stickTooltip = document.getElementById('stickTooltip');
+
+    function updatePointerInteraction(clientX, clientY) {
+      const rect = canvas.getBoundingClientRect();
+      const x = clientX - rect.left;
+      const y = clientY - rect.top;
+
+      if (lastPointerX !== null) {
+        const dx = x - lastPointerX;
+        pointerWind.x = Math.max(-2.4, Math.min(2.4, dx * 0.09));
+      }
+      lastPointerX = x;
+
+      // 檢測是否懸停在某柱香上方以顯示施主祈福語
+      const scaleX = canvas.width / rect.width;
+      const scaleY = canvas.height / rect.height;
+      const cx = x * scaleX;
+      const cy = y * scaleY;
+
+      let hovered = null;
+      let minDist = 26;
+      for (const hb of renderedStickHitboxes) {
+        const d = Math.hypot(cx - hb.x, cy - hb.y);
+        if (d < minDist) {
+          minDist = d;
+          hovered = hb;
+        }
+      }
+
+      if (hovered) {
+        stickTooltip.textContent = `🕯️ ${hovered.stick.nickname || '善信'}：【${hovered.stick.wish}】`;
+        stickTooltip.style.left = `${x}px`;
+        stickTooltip.style.top = `${y}px`;
+        stickTooltip.classList.add('show');
+      } else {
+        stickTooltip.classList.remove('show');
+      }
+    }
+
+    canvas.addEventListener('mousemove', (e) => updatePointerInteraction(e.clientX, e.clientY));
+    canvas.addEventListener('mouseleave', () => {
+      lastPointerX = null;
+      stickTooltip.classList.remove('show');
+    });
+    canvas.addEventListener('touchmove', (e) => {
+      if (e.touches && e.touches.length > 0) updatePointerInteraction(e.touches[0].clientX, e.touches[0].clientY);
+    }, { passive: true });
+    canvas.addEventListener('touchend', () => {
+      lastPointerX = null;
+      stickTooltip.classList.remove('show');
+    });
+
+    /* =========================================================
+       6. 集字行書帖特效與大殿即時香願榜渲染
+       ========================================================= */
+    let currentDisplayWish = '心想事成萬事勝意';
+    let currentDisplayAuthor = '';
+
+    function seededWave(idx, seed) {
+      const x = Math.sin((idx + 1) * 12.9898 + seed * 78.233) * 43758.5453;
+      return (x - Math.floor(x)) * 2 - 1;
+    }
+
+    function triggerCalligraphyShowcase(wishText, overrideTieKey = null, authorName = null) {
+      const cleanText = wishText.trim() || '心想事成萬事勝意';
+      currentDisplayWish = cleanText;
+      currentDisplayAuthor = authorName || getMyNickname();
+
+      const tieKey = overrideTieKey || document.getElementById('tieStyleSelector').value;
+      const cfg = TIE_CONFIGS[tieKey] || TIE_CONFIGS.lanting;
+
+      const overlay = document.getElementById('calligraphyOverlay');
+      const stage = document.getElementById('calligraphyStage');
+      const seal = document.getElementById('redSealStamp');
+      const rubric = document.getElementById('scrollRubric');
+      const colophon = document.getElementById('scrollColophon');
+
+      rubric.textContent = `集${cfg.name}・敬書祈願`;
+      colophon.textContent = `善信「${currentDisplayAuthor}」沐手敬書`;
+      stage.style.fontFamily = cfg.fontFamily;
+      stage.innerHTML = '';
+      seal.classList.remove('stamped');
+
+      overlay.classList.add('show');
+
+      const chars = Array.from(cleanText);
+      const seed = cleanText.length * 7;
+
+      chars.forEach((ch, idx) => {
+        const span = document.createElement('span');
+        span.className = 'xingshu-char';
+        span.textContent = ch;
+
+        const w1 = seededWave(idx, seed + 1);
+        const w2 = seededWave(idx, seed + 2);
+        const w3 = seededWave(idx, seed + 3);
+
+        const edgeBoost = (idx === 0 || idx === chars.length - 1) ? 0.08 : 0;
+        const scale = (1 + edgeBoost + w1 * cfg.scaleVariance).toFixed(3);
+        const rotate = (cfg.baseSkew + w2 * cfg.rotateVariance).toFixed(2) + 'deg';
+        const tx = (w3 * cfg.shiftVariance).toFixed(1) + 'px';
+
+        const inkCycle = idx % 4;
+        const inkAlpha = (0.98 - inkCycle * 0.055).toFixed(2);
+
+        span.style.setProperty('--sc', scale);
+        span.style.setProperty('--rot', rotate);
+        span.style.setProperty('--tx', tx);
+        span.style.setProperty('--ink-alpha', inkAlpha);
+        span.style.animationDelay = `${0.24 + idx * 0.13}s`;
+
+        stage.appendChild(span);
+      });
+
+      const sealDelay = 360 + chars.length * 130;
+      setTimeout(() => {
+        seal.classList.add('stamped');
+        audio.playStamp();
+      }, sealDelay);
+    }
+
+    function renderSharedWishBoard(allSticks) {
+      const list = document.getElementById('wishList');
+      document.getElementById('wishCount').textContent = allSticks.length;
+      list.innerHTML = '';
+
+      allSticks.slice().reverse().forEach((item) => {
+        const cfg = TIE_CONFIGS[item.tieKey] || TIE_CONFIGS.lanting;
+        const isMe = currentUser && item.uid === currentUser.uid;
+        const div = document.createElement('div');
+        div.className = 'wish-item';
+        div.innerHTML = `
+          <div class="wish-item-top">
+            <span>🕯️ ${item.nickname || '無名善信'} ${isMe ? '(我)' : ''}</span>
+            <span>${cfg.name.slice(0, 3)}</span>
+          </div>
+          <div class="wish-item-text" style="font-family:${cfg.fontFamily}">${item.wish}</div>
+          <div class="wish-item-actions">
+            <span>點擊文字賞析墨寶 🖌️</span>
+            <button class="bless-btn">🙏 隨喜讚歎 (${item.blessings || 0})</button>
+          </div>
+        `;
+
+        div.querySelector('.wish-item-text').addEventListener('click', () => {
+          document.getElementById('historyDrawer').classList.remove('open');
+          triggerCalligraphyShowcase(item.wish, item.tieKey, item.nickname);
+        });
+
+        div.querySelector('.bless-btn').addEventListener('click', (e) => {
+          e.stopPropagation();
+          sendBlessingToStick(item);
+        });
+
+        list.appendChild(div);
+      });
+    }
+
+    /* =========================================================
+       7. 木魚節奏禪修小遊戲
+       ========================================================= */
+    let rhythmActive = false;
+    let rhythmAnimId = null;
+    let ringRadius = 100;
+    let rhythmSessionScore = 0;
+    let rhythmCombo = 0;
+
+    function startRhythmGame() {
+      rhythmActive = true;
+      rhythmSessionScore = 0;
+      rhythmCombo = 0;
+      ringRadius = 100;
+      document.getElementById('rhythmSessionScore').textContent = '0';
+      document.getElementById('rhythmMaxCombo').textContent = '0';
+      document.getElementById('rhythmFeedback').textContent = '光圈縮至金環時點擊木魚！';
+      document.getElementById('zenRhythmOverlay').classList.add('show');
+
+      function loop() {
+        if (!rhythmActive) return;
+        ringRadius -= 1.35;
+        if (ringRadius < 22) {
+          ringRadius = 100;
+          rhythmCombo = 0;
+          document.getElementById('rhythmFeedback').textContent = '錯過節拍・重新凝神';
+        }
+        const pulseEl = document.getElementById('pulseRing');
+        pulseEl.style.width = `${ringRadius * 2}px`;
+        pulseEl.style.height = `${ringRadius * 2}px`;
+        rhythmAnimId = requestAnimationFrame(loop);
+      }
+      rhythmAnimId = requestAnimationFrame(loop);
+    }
+
+    function hitWoodenFish() {
+      if (!rhythmActive) return;
+      const diff = Math.abs(ringRadius - 48);
+      const fb = document.getElementById('rhythmFeedback');
+
+      if (diff <= 10) {
+        rhythmCombo++;
+        const pts = 20 + rhythmCombo * 5;
+        rhythmSessionScore += pts;
+        fb.textContent = `✨ 禪心合一（完美）+${pts}錢！連擊 ${rhythmCombo}`;
+        fb.style.color = '#f5e6b3';
+        audio.playWoodblock(760);
+      } else if (diff <= 22) {
+        rhythmCombo++;
+        const pts = 10;
+        rhythmSessionScore += pts;
+        fb.textContent = `👍 節奏平穩（良好）+${pts}錢`;
+        fb.style.color = '#d4af37';
+        audio.playWoodblock(620);
+      } else {
+        rhythmCombo = 0;
+        fb.textContent = '心浮氣躁・時機未到';
+        fb.style.color = '#e63932';
+        audio.playWoodblock(320);
+      }
+
+      const prevMax = parseInt(document.getElementById('rhythmMaxCombo').textContent, 10) || 0;
+      if (rhythmCombo > prevMax) document.getElementById('rhythmMaxCombo').textContent = rhythmCombo;
+      document.getElementById('rhythmSessionScore').textContent = rhythmSessionScore;
+      ringRadius = 100;
+    }
+
+    /* =========================================================
+       8. 一鍵分享與下載獨立共修網頁（徹底解決無法分享給別人的問題）
+       ========================================================= */
+    function copyShareLink(includeWish = false) {
+      const wishText = document.getElementById('wishInput').value.trim() || currentDisplayWish;
+      const tieKey = document.getElementById('tieStyleSelector').value;
+
+      let shareUrl = '';
+      try {
+        const url = new URL(window.location.href);
+        url.searchParams.set('room', currentRoomId);
+        if (includeWish) {
+          url.searchParams.set('wish', wishText);
+          url.searchParams.set('tie', tieKey);
+        }
+        shareUrl = url.toString();
+      } catch (e) {
+        shareUrl = window.location.href;
+      }
+
+      const isLocalFile = shareUrl.startsWith('file://') || shareUrl.startsWith('about:') || shareUrl.startsWith('blob:');
+      const shareText = isLocalFile
+        ? `【墨韻祈福・共修大殿】請開啟遊戲網頁並輸入共修房號：「${currentRoomId}」，我們即可在線上同一座香爐前共修祈福！`
+        : `【墨韻祈福・共修大殿】邀請您進入「${ROOM_NAMES[currentRoomId] || currentRoomId}」一同線上上香祈福！\n點擊連結直接進入同座香爐：${shareUrl}`;
+
+      const temp = document.createElement('textarea');
+      temp.value = shareText;
+      document.body.appendChild(temp);
+      temp.select();
+      document.execCommand('copy');
+      document.body.removeChild(temp);
+
+      if (isLocalFile) {
+        showToast(`已複製房號「${currentRoomId}」！您也可點擊「下載獨立分享網頁」直接傳檔案給親友`);
+      } else {
+        showToast('已複製專屬共修邀請連結！傳送給好友點開即可同爐上香');
+      }
+    }
+
+    function downloadStandaloneHtml() {
+      const wishText = document.getElementById('wishInput').value.trim() || currentDisplayWish;
+      const tieKey = document.getElementById('tieStyleSelector').value;
+
+      // 將當前房號與祈福語寫入預設腳本變數，讓親友雙擊打開下載的 HTML 檔就能直接進入同一房號並展開墨寶
+      let htmlContent = document.documentElement.outerHTML;
+      const injectScript = `<script>window.__PRESET_SHARE__ = ${JSON.stringify({ room: currentRoomId, wish: wishText, tie: tieKey })};<\/script>`;
+      htmlContent = '<!DOCTYPE html>\n' + htmlContent.replace('</head>', `${injectScript}\n</head>`);
+
+      const blob = new Blob([htmlContent], { type: 'text/html;charset=utf-8' });
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = `墨韻祈福共修大殿_${currentRoomId}.html`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(a.href);
+      showToast('已產生獨立共修網頁檔！直接傳送此 .html 檔給親友即可遊玩');
+    }
+
+    /* =========================================================
+       9. UI 事件綁定與 Firebase 啟動流程
+       ========================================================= */
+    function renderPresets(category) {
+      const container = document.getElementById('presetChips');
+      container.innerHTML = '';
+      const items = WISH_PRESETS[category] || WISH_PRESETS.all;
+      items.forEach((phrase) => {
+        const chip = document.createElement('button');
+        chip.className = 'chip';
+        chip.textContent = phrase;
+        chip.addEventListener('click', () => {
+          document.getElementById('wishInput').value = phrase;
+          audio.playWoodblock();
+        });
+        container.appendChild(chip);
+      });
+    }
+
+    document.querySelectorAll('.cat-btn').forEach((btn) => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('.cat-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        renderPresets(btn.dataset.cat);
+      });
+    });
+
+    document.getElementById('lightIncenseBtn').addEventListener('click', () => {
+      const wishText = document.getElementById('wishInput').value.trim() || '心想事成萬事勝意';
+      const tieKey = document.getElementById('tieStyleSelector').value;
+
+      addPersonalCoins(25, canvas.width / 2, 230, '敬獻清香 +25錢');
+      audio.playBowl(528, 2.8, 0.25);
+
+      lightSharedIncense(wishText, tieKey);
+      triggerCalligraphyShowcase(wishText, tieKey, getMyNickname());
+    });
+
+    document.getElementById('replayCalligraphyBtn').addEventListener('click', () => {
+      const wishText = document.getElementById('wishInput').value.trim() || currentDisplayWish;
+      triggerCalligraphyShowcase(wishText);
+    });
+
+    document.getElementById('closeScrollBtn').addEventListener('click', () => {
+      document.getElementById('calligraphyOverlay').classList.remove('show');
+    });
+
+    document.getElementById('openUpgradeBtn').addEventListener('click', () => {
+      updateHudUI();
+      document.getElementById('upgradeModal').classList.add('show');
+    });
+    document.getElementById('closeUpgradeBtn').addEventListener('click', () => {
+      document.getElementById('upgradeModal').classList.remove('show');
+    });
+    document.querySelectorAll('[data-donate]').forEach((btn) => {
+      btn.addEventListener('click', () => {
+        const amt = parseInt(btn.getAttribute('data-donate'), 10);
+        donateToSharedBurner(amt);
+      });
+    });
+
+    document.getElementById('openRoomModalBtn').addEventListener('click', () => {
+      document.getElementById('roomCodeInput').value = currentRoomId === 'public_hall' ? '' : currentRoomId;
+      document.getElementById('roomModal').classList.add('show');
+    });
+    document.getElementById('shareGameBtn').addEventListener('click', () => {
+      document.getElementById('roomCodeInput').value = currentRoomId === 'public_hall' ? '' : currentRoomId;
+      document.getElementById('roomModal').classList.add('show');
+    });
+    document.getElementById('closeRoomModalBtn').addEventListener('click', () => {
+      document.getElementById('roomModal').classList.remove('show');
+    });
+    document.getElementById('joinRoomBtn').addEventListener('click', () => {
+      const code = document.getElementById('roomCodeInput').value.trim() || 'public_hall';
+      document.getElementById('roomModal').classList.remove('show');
+      joinTempleRoom(code);
+      showToast(`已傳送至共修殿堂：${ROOM_NAMES[code] || code}`);
+    });
+    document.querySelectorAll('[data-preset-room]').forEach((btn) => {
+      btn.addEventListener('click', () => {
+        const code = btn.getAttribute('data-preset-room');
+        document.getElementById('roomModal').classList.remove('show');
+        joinTempleRoom(code);
+        showToast(`已傳送至：${ROOM_NAMES[code] || code}`);
+      });
+    });
+
+    document.getElementById('copyRoomInviteBtn').addEventListener('click', () => copyShareLink(false));
+    document.getElementById('scrollShareLinkBtn').addEventListener('click', () => copyShareLink(true));
+    document.getElementById('downloadShareHtmlBtn').addEventListener('click', downloadStandaloneHtml);
+
+    document.getElementById('zenRhythmBtn').addEventListener('click', startRhythmGame);
+    document.getElementById('rhythmArena').addEventListener('mousedown', (e) => {
+      e.preventDefault();
+      hitWoodenFish();
+    });
+    document.getElementById('closeRhythmBtn').addEventListener('click', () => {
+      rhythmActive = false;
+      cancelAnimationFrame(rhythmAnimId);
+      document.getElementById('zenRhythmOverlay').classList.remove('show');
+      if (rhythmSessionScore > 0) {
+        addPersonalCoins(rhythmSessionScore, canvas.width / 2, 240, `木魚禪修 +${rhythmSessionScore}錢`, false);
+      }
+    });
+    window.addEventListener('keydown', (e) => {
+      if (e.code === 'Space' && rhythmActive) {
+        e.preventDefault();
+        hitWoodenFish();
+      }
+    });
+
+    let bowCount = 0;
+    document.getElementById('bowBtn').addEventListener('click', () => {
+      bowCount++;
+      bowTiltAngle = 0.08;
+      audio.playBowl(432, 1.6, 0.2);
+      addPersonalCoins(10, canvas.width / 2, 280, `第 ${bowCount} 拜 +10錢`);
+
+      if (bowCount >= 3) {
+        document.getElementById('bowCount').textContent = '3';
+        const fortune = FORTUNES[Math.floor(Math.random() * FORTUNES.length)];
+        document.getElementById('fortuneRank').textContent = fortune.rank;
+        document.getElementById('fortunePoem').innerHTML = fortune.poem.replace('\n', '<br>');
+        document.getElementById('fortuneDesc').textContent = fortune.desc;
+        broadcastTempleAction(`🙏 善信「${getMyNickname()}」誠心三拜，求得【${fortune.rank}】靈籤！`);
+
+        setTimeout(() => {
+          document.getElementById('fortuneModal').classList.add('show');
+          bowCount = 0;
+          document.getElementById('bowCount').textContent = '0';
+        }, 420);
+      } else {
+        document.getElementById('bowCount').textContent = bowCount;
+      }
+    });
+
+    document.getElementById('closeFortuneBtn').addEventListener('click', () => {
+      document.getElementById('fortuneModal').classList.remove('show');
+      addPersonalCoins(60, canvas.width / 2, 220, '靈籤賜福 +60錢!');
+    });
+
+    document.getElementById('burnerStyleBtn').addEventListener('click', (e) => {
+      burnerStyle = burnerStyle === 'bronze' ? 'jade' : 'bronze';
+      e.target.textContent = burnerStyle === 'bronze' ? '🏺 古銅釉色' : '🍵 青瓷釉色';
+      audio.playWoodblock();
+    });
+
+    document.getElementById('soundToggleBtn').addEventListener('click', (e) => {
+      const isOn = audio.toggle();
+      e.target.textContent = isOn ? '🔔 音效：開' : '🔔 音效：關';
+      e.target.classList.toggle('active', isOn);
+    });
+
+    document.getElementById('historyBtn').addEventListener('click', () => {
+      document.getElementById('historyDrawer').classList.add('open');
+    });
+    document.getElementById('closeDrawerBtn').addEventListener('click', () => {
+      document.getElementById('historyDrawer').classList.remove('open');
+    });
+
+    async function initMultiplayerApp() {
+      renderPresets('all');
+      recalculateStickSlots();
+      renderSharedWishBoard(allRoomSticksCache);
+      updateHudUI();
+      animate();
+
+      // 解析網址參數或預載分享資料
+      const params = new URLSearchParams(window.location.search);
+      const preset = window.__PRESET_SHARE__ || {};
+      const startRoom = params.get('room') || preset.room || 'public_hall';
+      const sharedWish = params.get('wish') || preset.wish;
+      const sharedTie = params.get('tie') || preset.tie;
+
+      if (sharedWish) {
+        document.getElementById('wishInput').value = sharedWish;
+        if (sharedTie && TIE_CONFIGS[sharedTie]) {
+          document.getElementById('tieStyleSelector').value = sharedTie;
+        }
+        setTimeout(() => {
+          triggerCalligraphyShowcase(sharedWish, sharedTie || 'lanting', '親友結緣');
+        }, 500);
+      }
+
+      if (!firebaseConfig) {
+        setConnectionStatus(false);
+        await joinTempleRoom(startRoom);
+        return;
+      }
+
+      try {
+        const app = initializeApp(firebaseConfig);
+        auth = getAuth(app);
+        db = getFirestore(app);
+
+        if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
+          const cred = await signInWithCustomToken(auth, __initial_auth_token);
+          currentUser = cred.user;
+        } else {
+          const cred = await signInAnonymously(auth);
+          currentUser = cred.user;
+        }
+
+        await joinTempleRoom(startRoom);
+      } catch (err) {
+        console.warn('Auth/Init fallback to offline mode:', err);
+        setConnectionStatus(false);
+        await joinTempleRoom(startRoom);
+      }
+    }
+
+    initMultiplayerApp();
+  </script>
+
+</body></html>
